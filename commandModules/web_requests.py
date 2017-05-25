@@ -2,11 +2,9 @@ import discord
 import botMain
 import config
 from discord.ext import commands
-
-# required for status
 import time
 
-# required for steebchamp
+# steebchamp
 from bs4 import BeautifulSoup as bs
 import sys
 from html.parser import HTMLParser
@@ -15,17 +13,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-class Testing():
+class Web_Requests():
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def status(self):
-        current_time = (time.time() - botMain.Bot.start_time)/3600
-        print('Bot has been running for: {0:.2f} hours'.format(current_time))
-        await self.bot.say('Bot has been running for: **{0:.2f}** hours'.format(current_time))
-
+    ######### TODO #########
+    # command(steebchamp)
+    # Make sure that the webdriver doens't use chrome (use PhantomJS or some
+    # other headless browser)
+    ########################
+    # Gets the last time Steebert played Invoker
     @commands.command()
     async def steebchamp(self):
         kevin_url = "https://denk-o.github.io/steebchamp.io/"
@@ -41,10 +39,12 @@ class Testing():
                 continue
             else:
                 last_played_raw = html
+                browser.close()
                 break
             time.sleep(2)
-        print(last_played_raw)
-        await self.bot.say(last_played_raw)
+        last_played_str = last_played_raw.replace(':', ': ')
+        print(last_played_str)
+        await self.bot.say(last_played_str)
 
 def setup(bot):
-    bot.add_cog(Testing(bot))
+    bot.add_cog(Web_Requests(bot))

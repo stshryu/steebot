@@ -22,7 +22,8 @@ class Bot(commands.Bot):
     def initial_extensions(self):
         def load_extension(name):
             self.load_extension('commandModules.{0}'.format(name))
-        load_extension('testing')
+        load_extension('web_requests')
+        load_extension('util')
 
     def initial_listener(self):
         self.add_listener(self.startup_message, 'on_ready')
