@@ -11,3 +11,7 @@ Bot_Token = config['Bot Info']['token']
 # App Information
 App_ID = config['App Info']['ID']
 App_Secret = config['App Info']['secret']
+
+# Twitch Information
+Twitch_ClientID = config['Twitch Info']['ID']
+Twitch_Secret = config['Twitch Info']['secret']

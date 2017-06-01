@@ -27,26 +27,80 @@ def format_data(cursor_object):
     result_data = []
     for row in raw_data:
         temp_arr = []
+        temp_dict = {}
         for index, value in enumerate(row):
-            temp_dict = {}
             temp_dict[headers[index]] = value
-            temp_arr.append(temp_dict)
+        temp_arr.append(temp_dict)
         result_data.append(temp_arr)
     return result_data
 #</editor-fold>
 
 #<editor-fold> DATABASE OPERATIONS TWITCH
+
+def update_live_streams(streams):
+    stream_alias = []
+    stream_online = []
+    stream_offline = []
+    for index, value in enumerate(streams):
+        if value[1] == '0':
+            stream_offline.insert(index, value[0])
+        else:
+            stream_online.insert(index, value[0])
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    today = date.today()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    placeholder = '?'
+    placeholders = ', '.join(placeholder for unused in stream_offline)
+    # Update streams that went online first
+    sql_offline = """
+        UPDATE twitch_subs
+            SET is_online = 0
+        WHERE stream_alias IN ( %s );
+        """ % placeholders
+    # Update streams that went online
+    placeholder = '?'
+    placeholders = ', '.join(placeholder for unused in stream_online)
+    sql_online = """
+        UPDATE twitch_subs
+            SET is_online = 1
+        WHERE stream_alias IN ( %s );
+        """ % placeholders
+    try:
+        if(len(sql_offline) > 0):
+            cursor.execute(sql_offline, stream_offline)
+            connection.commit()
+        if(len(sql_online) > 0):
+            cursor.execute(sql_online, stream_online)
+            connection.commit()
+        result['results'].append(True)
+    except:
+        result['errors'].append('Error: Could not update stream status')
+    connection.close()
+    return result
+
+
 def add_twitch_stream(stream_id, stream_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
     today = date.today()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
     sql = """
         INSERT INTO twitch_streams (stream_id, stream_alias, is_active, ts_created, ts_modified)
         VALUES (?, ?, 1, ?, ?);
         """
-    cursor.execute(sql, (stream_id, stream_alias, today, today))
-    connection.commit()
+    try:
+        cursor.execute(sql, (stream_id, stream_alias, today, today))
+        connection.commit()
+        result['results'].append(True)
+    except sqlite3.IntegrityError:
+        result['errors'].append('Error: Entry alredy exists')
     connection.close()
+    return result
 
 def remove_twitch_stream(stream_id):
     connection = sqlite3_connect(db_path)
@@ -61,6 +115,126 @@ def remove_twitch_stream(stream_id):
     cursor.execute(sql, (today, stream_id))
     connection.commit()
     connection.close()
+    return True
+
+def does_twitch_stream_exist(stream_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT * FROM twitch_streams
+        WHERE stream_id = ?
+        """
+    cursor.execute(sql, (stream_id,))
+    result['results'] = format_data(cursor)
+    if(len(result['results'])):
+        return True
+    else:
+        return False
+
+def follow_twitch_stream(server_id, stream_alias):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    today = date.today()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        INSERT INTO twitch_subs (server_id, stream_alias, is_active, ts_created, ts_modified)
+        VALUES (?, ?, 1, ?, ?);
+        """
+    try:
+        cursor.execute(sql, (server_id, stream_alias, today, today))
+        connection.commit()
+        result['results'].append(True)
+    except sqlite3.IntegrityError:
+        result['errors'].append('Error: Entry alredy exists')
+    connection.close()
+    return result
+
+def unfollow_stream(server_id, stream_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    today = date.today()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        UPDATE twitch_subs
+            SET is_active = 0,
+                ts_modified
+        WHERE server_id = ? and stream_id = ?;
+        """
+    try:
+        cursor.execute(sql, (server_id, stream_id))
+        connection.commit()
+        results['results'].append(True)
+    except:
+        result['errors'].append('Error: Stream unfollow failed')
+    connection.close()
+    return result
+
+def is_stream_followed(server_id, stream_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT * FROM twitch_subs
+        WHERE server_id = ? and stream_id = ? and is_active = 1;
+        """
+    cursor.execute(sql, (server_id, stream_id))
+    result['results'] = format_data(cursor)
+    if(len(results['results'])):
+        return True
+    else:
+        return False
+
+def get_followed_streams_id(server_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT * FROM twitch_subs
+        WHERE server_id = ? and is_active = 1;
+        """
+    try:
+        cursor.execute(sql, (server_id,))
+        result['results'] = format_data(cursor)
+    except:
+        result['errors'].append('Error: Error getting followed streams')
+    connection.close()
+    return result
+
+def get_followed_streams_aliases(server_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    ##### Deprecated with the use of stream_alias instead of stream_id
+    ##### if for some reason stream_id needs to be used, uncomment this sql statement
+    # sql = """
+    #     SELECT twitch_subs.is_online, twitch_streams.stream_alias, twitch_subs.server_id FROM twitch_subs
+    #     INNER JOIN twitch_streams ON twitch_streams.stream_id = twitch_subs.stream_id
+    #     WHERE twitch_subs.server_id = ?;
+    #     """
+    sql = """
+        SELECT * FROM twitch_subs
+        WHERE server_id = ?;
+        """
+    try:
+        cursor.execute(sql, (server_id,))
+        result['results'] = format_data(cursor)
+    except:
+        result['errors'].append('Error: Error getting followed streams')
+    connection.close()
+    return result
 
 def get_active_streams():
     connection = sqlite3_connect(db_path)
