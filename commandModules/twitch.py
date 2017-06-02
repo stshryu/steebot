@@ -6,6 +6,15 @@ import time
 import commandModules.db_driver as db
 import requests
 
+def twitch_permission():
+        def predicate(ctx):
+            if ctx.message.channel.is_private: return True
+            try:
+                return ctx.message.channel.permissions_for(ctx.message.author).manage_messages
+            except:
+                return False
+        return commands.check(predicate)
+
 class Twitch():
     TWITCH_BASE_URL = 'https://api.twitch.tv/kraken/'
     stream_param = 'streams/'
@@ -16,9 +25,16 @@ class Twitch():
         self.twitch_id = config.Twitch_ClientID
 
     #<editor-fold> Twitch helper functions
+    ## TODO maybe add a funciton that takes an array of values and outputs to the
+    ## bot.say command to make changing the notificaiton message easier
+    ## e.g. def notifier_thing(self, msg_type, param)... or something like that
+
     # If stream exists returns information on it (if doesn't exist returns false)
-    def verify_stream(self, stream_alias):
-        request_url = Twitch.TWITCH_BASE_URL + Twitch.channel_param + stream_alias + '?client_id=' + self.twitch_id
+    def verify_stream(self, stream_alias, stream_request=False):
+        if not stream_request:
+            request_url = Twitch.TWITCH_BASE_URL + Twitch.channel_param + stream_alias + '?client_id=' + self.twitch_id
+        else:
+            request_url = Twitch.TWITCH_BASE_URL + Twitch.stream_param + stream_alias + '?client_id=' + self.twitch_id
         r = requests.get(request_url)
         if r.status_code == 200:
             return r.json()
@@ -128,11 +144,41 @@ class Twitch():
                 stream_aliases.append(temp_arr)
         print('Found {} streams followed by ServerID: {}'.format(len(stream_aliases), server_id))
         return stream_aliases
+
+    def get_stream_data(self, stream_array):
+        """ Takes an array of stream_aliases to parse from Twitch """
+        stream_metadata = []
+        for stream in stream_array:
+            stream_data = self.verify_stream(stream)
+            stream_metadata.appned(stream_data)
+        return stream_metadata
+
     #</editor-fold>
 
     #<editor-fold> Twitch Commands
-    @commands.command(name="refresh", pass_context="True")
+    @commands.group(pass_context=True, invoke_without_command=True)
+    async def twitch(self, ctx, stream : str):
+        """ Checks if stream exists, and if stream is streaming
+
+        Usage: !twitch <stream_name>
+        """
+        stream_data = self.verify_stream(stream, True)
+        if not stream_data:
+            print('Not a valid stream: {}'.format(stream))
+            await self.bot.say('**{}** is not a valid Twitch.tv Stream'.format(stream))
+        else:
+            if stream_data['stream'] == None:
+                print('{} is offline'.format(stream))
+                await self.bot.say('**{}** is currently offline'.format(stream))
+
+    @twitch.command(name="test", pass_context=True)
+    @twitch_permission()
+    async def testing(self, ctx):
+        print('help a me')
+
+    @commands.command(name="refresh", pass_context=True)
     async def refresh_followed_streams(self, ctx):
+        """ Force refresh on all followed streams on a server (notifier cron does the same thing). """
         server_id = ctx.message.server.id
         # stream_ids = self.get_followed_stream_ids(server_id) stream id's not used in twitch???
         stream_aliases = self.get_followed_stream_aliases(server_id)
@@ -140,16 +186,19 @@ class Twitch():
         for item in live_streams:
             await self.bot.say('**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
 
-    @commands.command(name="live", pass_context="True")
+    @commands.command(name="live", pass_context=True)
     async def live_followed_streams(self, ctx):
+        """ Gets all live streams followed by a server. """
         server_id = ctx.message.server.id
         stream_aliases = self.get_followed_stream_aliases(server_id)
         all_live_streams = self.get_live_streams(stream_aliases, False)
         for item in all_live_streams:
             await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
 
-    @commands.command(name="follow", pass_context="True")
+    @twitch.command(name="follow", pass_context=True)
+    @twitch_permission()
     async def add_twitch_stream(self, ctx, stream : str):
+        """ Adds twitch stream to db (if it does not exist) then follows stream and updates """
         print('Checking if stream {} exists on Twitch...'.format(stream))
         data = self.verify_stream(stream)
         if(data):
@@ -192,8 +241,10 @@ class Twitch():
             print('Twitch stream {} not found'.format(stream))
             await self.bot.say('Twitch Error: Stream for **{}** not found'.format(stream))
 
-    @commands.command(name="unfollow", pass_context="True")
+    @twitch.command(name="unfollow", pass_context=True)
+    @twitch_permission()
     async def remove_twitch_stream(self, ctx, stream : str):
+        """ Unfollows stream from DB """
         server_id = ctx.message.server.id
         print('Unfollowing {} on ServerID: {}'.format(stream, server_id))
         if not self.is_stream_followed(server_id, stream):

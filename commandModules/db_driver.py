@@ -36,7 +36,6 @@ def format_data(cursor_object):
 #</editor-fold>
 
 #<editor-fold> DATABASE OPERATIONS TWITCH
-
 def update_live_streams(streams):
     stream_alias = []
     stream_online = []
