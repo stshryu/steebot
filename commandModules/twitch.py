@@ -6,11 +6,6 @@ import time
 import commandModules.db_driver as db
 import requests
 
-# Example request to see if stream exists:
-# https://api.twitch.tv/kraken/channels/ohhhmyyy?client_id=dicks
-# Request to see if stream is online:
-# https://api.twitch.tv/kraken/streams/ohhhmyyy?client_id=dicks
-
 class Twitch():
     TWITCH_BASE_URL = 'https://api.twitch.tv/kraken/'
     stream_param = 'streams/'
@@ -30,7 +25,13 @@ class Twitch():
         else:
             return False
 
-    def get_live_streams(self, stream_arr):
+    def is_stream_followed(self, server_id, stream_alias):
+        if(db.is_stream_followed(server_id, stream_alias)):
+            return True
+        else:
+            return False
+
+    def get_live_streams(self, stream_arr, update=True):
         twitch_stream_url = 'https://twitch.tv/'
         stream_arr = stream_arr
         stream_diff_db = []
@@ -59,6 +60,17 @@ class Twitch():
                     live_stream_metadata[stream_name] = temp_dict
                     temp_arr.append('1')
             live_streams.append(temp_arr)
+        # If we want all live streams regardless of last DB status
+        if not update:
+            all_live_streams = []
+            for item in live_stream_metadata:
+                temp_dict = {}
+                temp_dict['name'] = item
+                temp_dict['title'] = live_stream_metadata[item]['title']
+                temp_dict['game'] = live_stream_metadata[item]['game']
+                temp_dict['twitch_url'] = twitch_stream_url + item
+                all_live_streams.append(temp_dict)
+            return all_live_streams
         stream_diff_live = []
         for item in live_streams:
             stream_diff_live.append(item[0] + ':' + str(item[1]))
@@ -96,6 +108,13 @@ class Twitch():
         print('Found {} streams followed by ServerID: {}'.format(len(stream_ids), server_id))
         return stream_ids
 
+    def unfollow_stream(self, server_id, stream_alias):
+        query = db.unfollow_stream(server_id, stream_alias)
+        if(query):
+            return True
+        else:
+            return query['errors']
+
     def get_followed_stream_aliases(self, server_id):
         server_id = server_id
         print('Getting followed streams for ServerID: {}'.format(server_id))
@@ -112,7 +131,6 @@ class Twitch():
     #</editor-fold>
 
     #<editor-fold> Twitch Commands
-    # Force refresh active Twitch streams
     @commands.command(name="refresh", pass_context="True")
     async def refresh_followed_streams(self, ctx):
         server_id = ctx.message.server.id
@@ -122,9 +140,15 @@ class Twitch():
         for item in live_streams:
             await self.bot.say('**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
 
-    # Checks if stream exists in db, if yes follow stream on server.
-    # If doesn't exist, add stream first to db then follow on server.
-    @commands.command(name="addstream", pass_context="True")
+    @commands.command(name="live", pass_context="True")
+    async def live_followed_streams(self, ctx):
+        server_id = ctx.message.server.id
+        stream_aliases = self.get_followed_stream_aliases(server_id)
+        all_live_streams = self.get_live_streams(stream_aliases, False)
+        for item in all_live_streams:
+            await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
+
+    @commands.command(name="follow", pass_context="True")
     async def add_twitch_stream(self, ctx, stream : str):
         print('Checking if stream {} exists on Twitch...'.format(stream))
         data = self.verify_stream(stream)
@@ -167,6 +191,23 @@ class Twitch():
         else:
             print('Twitch stream {} not found'.format(stream))
             await self.bot.say('Twitch Error: Stream for **{}** not found'.format(stream))
+
+    @commands.command(name="unfollow", pass_context="True")
+    async def remove_twitch_stream(self, ctx, stream : str):
+        server_id = ctx.message.server.id
+        print('Unfollowing {} on ServerID: {}'.format(stream, server_id))
+        if not self.is_stream_followed(server_id, stream):
+            print('Stream: {} is not followed on ServerID: {}'.format(stream, server_id))
+            await self.bot.say('Error: **{}** is not followed on this server'.format(stream))
+        else:
+            result = self.unfollow_stream(server_id, stream)
+            if(result):
+                print('Stream: {} was successfully unfollowed on ServerID: {}'.format(stream, server_id))
+                await self.bot.say('Successfully removed **{}**'.format(stream))
+            else:
+                for item in result:
+                    print(item)
+                await self.bot.say('Unknown error occured while removing {}'.format(stream))
     #</editor-fold>
 
 def setup(bot):

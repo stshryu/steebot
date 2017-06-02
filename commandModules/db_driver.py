@@ -56,7 +56,7 @@ def update_live_streams(streams):
     placeholders = ', '.join(placeholder for unused in stream_offline)
     # Update streams that went online first
     sql_offline = """
-        UPDATE twitch_subs
+        UPDATE twitch_streams
             SET is_online = 0
         WHERE stream_alias IN ( %s );
         """ % placeholders
@@ -64,7 +64,7 @@ def update_live_streams(streams):
     placeholder = '?'
     placeholders = ', '.join(placeholder for unused in stream_online)
     sql_online = """
-        UPDATE twitch_subs
+        UPDATE twitch_streams
             SET is_online = 1
         WHERE stream_alias IN ( %s );
         """ % placeholders
@@ -142,11 +142,19 @@ def follow_twitch_stream(server_id, stream_alias):
     result['results'] = []
     result['errors'] = []
     sql = """
+        UPDATE twitch_subs
+            SET is_active = 1,
+                ts_modified = ?
+        WHERE server_id = ? and stream_alias = ?;
+        """
+    sql2 = """
         INSERT INTO twitch_subs (server_id, stream_alias, is_active, ts_created, ts_modified)
-        VALUES (?, ?, 1, ?, ?);
+        SELECT ?, ?, 1, ?, ?
+        WHERE (Select Changes() = 0);
         """
     try:
-        cursor.execute(sql, (server_id, stream_alias, today, today))
+        cursor.execute(sql, (today, server_id, stream_alias))
+        cursor.execute(sql2, (server_id, stream_alias, today, today))
         connection.commit()
         result['results'].append(True)
     except sqlite3.IntegrityError:
@@ -154,7 +162,7 @@ def follow_twitch_stream(server_id, stream_alias):
     connection.close()
     return result
 
-def unfollow_stream(server_id, stream_id):
+def unfollow_stream(server_id, stream_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
     today = date.today()
@@ -164,11 +172,11 @@ def unfollow_stream(server_id, stream_id):
     sql = """
         UPDATE twitch_subs
             SET is_active = 0,
-                ts_modified
-        WHERE server_id = ? and stream_id = ?;
+                ts_modified = ?
+        WHERE server_id = ? and stream_alias = ?;
         """
     try:
-        cursor.execute(sql, (server_id, stream_id))
+        cursor.execute(sql, (today, server_id, stream_alias))
         connection.commit()
         results['results'].append(True)
     except:
@@ -176,7 +184,7 @@ def unfollow_stream(server_id, stream_id):
     connection.close()
     return result
 
-def is_stream_followed(server_id, stream_id):
+def is_stream_followed(server_id, stream_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
     result = {}
@@ -184,11 +192,11 @@ def is_stream_followed(server_id, stream_id):
     result['errors'] = []
     sql = """
         SELECT * FROM twitch_subs
-        WHERE server_id = ? and stream_id = ? and is_active = 1;
+        WHERE server_id = ? and stream_alias = ? and is_active = 1;
         """
-    cursor.execute(sql, (server_id, stream_id))
+    cursor.execute(sql, (server_id, stream_alias))
     result['results'] = format_data(cursor)
-    if(len(results['results'])):
+    if(len(result['results'])):
         return True
     else:
         return False
@@ -225,7 +233,8 @@ def get_followed_streams_aliases(server_id):
     #     WHERE twitch_subs.server_id = ?;
     #     """
     sql = """
-        SELECT * FROM twitch_subs
+        SELECT twitch_subs.server_id, twitch_streams.is_online, twitch_subs.stream_alias FROM twitch_subs
+        INNER JOIN twitch_streams on twitch_streams.stream_alias = twitch_subs.stream_alias
         WHERE server_id = ?;
         """
     try:
