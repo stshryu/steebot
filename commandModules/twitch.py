@@ -7,13 +7,13 @@ import commandModules.db_driver as db
 import requests
 
 def twitch_permission():
-        def predicate(ctx):
-            if ctx.message.channel.is_private: return True
-            try:
-                return ctx.message.channel.permissions_for(ctx.message.author).manage_messages
-            except:
-                return False
-        return commands.check(predicate)
+    def predicate(ctx):
+        if ctx.message.channel.is_private: return True
+        try:
+            return ctx.message.channel.permissions_for(ctx.message.author).manage_messages
+        except:
+            return False
+    return commands.check(predicate)
 
 class Twitch():
 
@@ -173,6 +173,7 @@ class Twitch():
                 await self.bot.say('**{}** is currently offline'.format(stream))
 
     @commands.command(name="following", pass_context=True)
+    @twitch_permission()
     async def get_followed_streams(self, ctx):
         """ Display all currently followed Twitch Streams on server """
         server_id = ctx.message.server.id
@@ -190,6 +191,7 @@ class Twitch():
             await self.bot.say('Not following any streams on this server. If you want to add a stream type:\n `!twitch follow <stream>`')
 
     @commands.command(name="refresh", pass_context=True)
+    @twitch_permission()
     async def refresh_followed_streams(self, ctx):
         """ Force refresh on all followed streams on a server (notifier cron does the same thing). """
         server_id = ctx.message.server.id
@@ -199,7 +201,11 @@ class Twitch():
         for item in live_streams:
             await self.bot.say('**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
 
+    # There has to be a better way to deal with bot output. For example, I had to write
+    # a bunch of slightly different bot.say commands for each type of output which makes
+    # the code look messy and ugly
     @commands.command(name="live", pass_context=True)
+    @twitch_permission()
     async def live_followed_streams(self, ctx):
         """ Gets all live streams followed by a server. """
         server_id = ctx.message.server.id
@@ -207,7 +213,10 @@ class Twitch():
         all_live_streams = self.get_live_streams(stream_aliases, False)
         if (len(all_live_streams) > 0):
             for item in all_live_streams:
-                await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
+                if not item['game']:
+                    await self.bot.say('**{}** is currently streaming: {} at {}'.format(item['name'], item['title'], item['twitch_url']))
+                else:
+                    await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
         else:
             await self.bot.say('No followed streams are currently live right now')
     @twitch.command(name="follow", pass_context=True)
