@@ -16,6 +16,7 @@ def twitch_permission():
         return commands.check(predicate)
 
 class Twitch():
+
     TWITCH_BASE_URL = 'https://api.twitch.tv/kraken/'
     stream_param = 'streams/'
     channel_param = 'channels/'
@@ -171,10 +172,22 @@ class Twitch():
                 print('{} is offline'.format(stream))
                 await self.bot.say('**{}** is currently offline'.format(stream))
 
-    @twitch.command(name="test", pass_context=True)
-    @twitch_permission()
-    async def testing(self, ctx):
-        print('help a me')
+    @commands.command(name="following", pass_context=True)
+    async def get_followed_streams(self, ctx):
+        """ Display all currently followed Twitch Streams on server """
+        server_id = ctx.message.server.id
+        stream_aliases = self.get_followed_stream_aliases(server_id)
+        if(len(stream_aliases)>0):
+            message = []
+            message.append('```Currently Following on this Server:\n')
+            for stream in stream_aliases:
+                stream_ = stream[0] + ',\n'
+                message.append(stream_)
+            message.append('```')
+            response = ''.join(map(str, message))
+            await self.bot.say(response)
+        else:
+            await self.bot.say('Not following any streams on this server. If you want to add a stream type:\n `!twitch follow <stream>`')
 
     @commands.command(name="refresh", pass_context=True)
     async def refresh_followed_streams(self, ctx):
@@ -192,9 +205,11 @@ class Twitch():
         server_id = ctx.message.server.id
         stream_aliases = self.get_followed_stream_aliases(server_id)
         all_live_streams = self.get_live_streams(stream_aliases, False)
-        for item in all_live_streams:
-            await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
-
+        if (len(all_live_streams) > 0):
+            for item in all_live_streams:
+                await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
+        else:
+            await self.bot.say('No followed streams are currently live right now')
     @twitch.command(name="follow", pass_context=True)
     @twitch_permission()
     async def add_twitch_stream(self, ctx, stream : str):

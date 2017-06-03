@@ -25,6 +25,7 @@ class Bot(commands.Bot):
         load_extension('web_requests')
         load_extension('util')
         load_extension('twitch')
+        load_extension('interact')
 
     def initial_listener(self):
         self.add_listener(self.startup_message, 'on_ready')
