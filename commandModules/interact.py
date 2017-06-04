@@ -5,6 +5,15 @@ from discord.ext import commands
 import time
 import requests
 
+### Testing admin privileges
+def is_admin():
+    def predicate(ctx):
+        if ctx.message.author.id == config.Admin:
+            return True
+        else:
+            return False
+    return commands.check(predicate)
+
 class Interact():
 
     def __init__(self, bot):
@@ -35,10 +44,6 @@ class Interact():
         author = str(author_).split('#')[0]
         message = ':clap:don\'t:clap:pretend:clap:to:clap:be:clap:an:clap:OkBread:clap:unless:clap:you:clap:poop:clap:uncontrollably:clap:'
         await self.bot.say('**{}** says: **{}**'.format(author, message))
-
-    @commands.command(name="test", pass_context=True)
-    async def testing(self, ctx):
-        print(ctx.message.author)
 
 def setup(bot):
     bot.add_cog(Interact(bot))

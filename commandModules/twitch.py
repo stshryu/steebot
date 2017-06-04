@@ -5,9 +5,12 @@ from discord.ext import commands
 import time
 import commandModules.db_driver as db
 import requests
+import asyncio
 
 def twitch_permission():
     def predicate(ctx):
+        # if ctx.message.author.id == config.Admin: ## For debugging only
+        #     return True
         if ctx.message.channel.is_private: return True
         try:
             return ctx.message.channel.permissions_for(ctx.message.author).manage_messages
@@ -25,10 +28,17 @@ class Twitch():
         self.bot = bot
         self.twitch_id = config.Twitch_ClientID
 
+        self.notifier_lock = asyncio.Lock()
+        self.notifier_bg_task = bot.loop.create_task(self.twitch_notifier())
+
+    def __del__(self):
+        self.notifier_bg_task.cancel()
+
     #<editor-fold> Twitch helper functions
     ## TODO maybe add a funciton that takes an array of values and outputs to the
     ## bot.say command to make changing the notificaiton message easier
     ## e.g. def notifier_thing(self, msg_type, param)... or something like that
+    ## Check Zon's bot for an example of formatted messages (probably easier to edit too)
 
     # If stream exists returns information on it (if doesn't exist returns false)
     def verify_stream(self, stream_alias, stream_request=False):
@@ -47,6 +57,10 @@ class Twitch():
             return True
         else:
             return False
+
+    def get_default_channel_obj(self, server_id):
+        server = self.bot.get_server(str(server_id))
+        return server.default_channel
 
     def get_live_streams(self, stream_arr, update=True):
         twitch_stream_url = 'https://twitch.tv/'
@@ -219,6 +233,7 @@ class Twitch():
                     await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
         else:
             await self.bot.say('No followed streams are currently live right now')
+
     @twitch.command(name="follow", pass_context=True)
     @twitch_permission()
     async def add_twitch_stream(self, ctx, stream : str):
@@ -283,6 +298,31 @@ class Twitch():
                 for item in result:
                     print(item)
                 await self.bot.say('Unknown error occured while removing {}'.format(stream))
+
+    async def twitch_notifier(self):
+        """ Notifications for followed Twitch Streams
+        Should note that I took a lot of this code from Zonbot on Github to learn about asyncio
+        events in Python
+
+        Also send_message() requires a channel object not just the channel ID
+        """
+
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed:
+            async with self.notifier_lock:
+                servers = db.get_all_servers()
+                for server in servers:
+                    server_id = server[0]['id']
+                    default_channel = self.get_default_channel_obj(server_id)
+                    try:
+                        stream_aliases = self.get_followed_stream_aliases(server_id)
+                        live_streams = self.get_live_streams(stream_aliases)
+                    except Exception as e:
+                        print('Error occured in notifier loop')
+                        print(e)
+                    for item in live_streams:
+                        await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
+            await asyncio.sleep(60)
     #</editor-fold>
 
 def setup(bot):

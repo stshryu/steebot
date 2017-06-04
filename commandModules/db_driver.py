@@ -1,6 +1,7 @@
 import sqlite3
 from os.path import isfile, getsize
 from datetime import date, datetime
+import time
 
 db_path = 'database/servers.db'
 
@@ -37,6 +38,7 @@ def format_data(cursor_object):
 
 #<editor-fold> DATABASE OPERATIONS TWITCH
 def update_live_streams(streams):
+    start_time = time.time()
     stream_alias = []
     stream_online = []
     stream_offline = []
@@ -78,6 +80,7 @@ def update_live_streams(streams):
     except:
         result['errors'].append('Error: Could not update stream status')
     connection.close()
+    print('Query Runtime: {} seconds'.format(time.time() - start_time))
     return result
 
 
