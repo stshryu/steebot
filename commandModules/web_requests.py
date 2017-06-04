@@ -3,13 +3,14 @@ import botMain
 import config
 from discord.ext import commands
 import time
+import requests
 
 # steebchamp
 from bs4 import BeautifulSoup as bs
 import sys
+from selenium.webdriver.support.ui import WebDriverWait
 from html.parser import HTMLParser
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
@@ -47,6 +48,26 @@ class Web_Requests():
         print('Request took: {0:.2f} seconds'.format(total_request_time))
         print(last_played_str)
         await self.bot.say(last_played_str)
+
+    ### TODO: This actually gave me an idea, should integrate an OPENDOTA parser
+    ### that can get mmr, most played, etc... of players by typing in their username
+    ### although you do need Steam32 ID so that may be an issue if you're just typing
+    ### in the name instead of the actual ID
+    @commands.command(name="nick", pass_context=True)
+    async def nick_sucks_at_dota(self, ctx):
+        """ Made because honestly, Nick is one of the worst Dota players I know """
+
+        # Nick's own personal url to parse his opendota
+        request_url = 'https://api.opendota.com/api/players/52926379'
+        r = requests.get(request_url)
+        if r.status_code == 200:
+            data = r.json()
+            nick_mmr = data['solo_competitive_rank']
+            adjusted_mmr = int(nick_mmr) - 1000
+            await self.bot.say('Nick\'s adjusted mmr is: **{}**'.format(adjusted_mmr))
+        else:
+            print('Error getting profile')
+
 
 def setup(bot):
     bot.add_cog(Web_Requests(bot))
