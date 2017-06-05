@@ -83,6 +83,41 @@ def update_live_streams(streams):
     print('Query Runtime: {} seconds'.format(time.time() - start_time))
     return result
 
+def get_all_stream_status():
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT stream_alias, is_online FROM twitch_streams
+        WHERE is_active = 1;
+        """
+    try:
+        cursor.execute(sql)
+        result['results'].append(format_data(cursor))
+    except Exception as e:
+        result['errors'].append(e)
+    connection.close()
+    return result
+
+def get_all_active_twitch_subs():
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT DISTINCT stream_alias FROM twitch_subs
+        WHERE is_active = 1;
+        """
+    try:
+        cursor.execute(sql)
+        result['results'].append(format_data(cursor))
+    except Exception as e:
+        result['errors'].append(e)
+    connection.close()
+    return result
 
 def add_twitch_stream(stream_id, stream_alias):
     connection = sqlite3_connect(db_path)

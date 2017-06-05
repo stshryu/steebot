@@ -23,6 +23,7 @@ class Twitch():
     TWITCH_BASE_URL = 'https://api.twitch.tv/kraken/'
     stream_param = 'streams/'
     channel_param = 'channels/'
+    multi_stream_param = 'streams?'
 
     def __init__(self, bot):
         self.bot = bot
@@ -61,6 +62,76 @@ class Twitch():
     def get_default_channel_obj(self, server_id):
         server = self.bot.get_server(str(server_id))
         return server.default_channel
+
+    def chunks(self, list_, chunk_size):
+        """Yield successive n-sized chunks from a list."""
+
+        for i in range(0, len(list_), chunk_size):
+            yield list_[i:i + chunk_size]
+
+    def get_live_stream_by_chunk(self, stream_arr, update=True):
+        """ Automatically chunks requests into arrays of 100 and queries Twitch """
+
+        # Get 50 streams per request from Twitch
+        twitch_stream_url = 'https://twitch.tv/'
+        stream_chunked = self.chunks(stream_arr, 50)
+        live_streams = []
+        live_stream_metadata = {}
+        for streams in stream_chunked:
+            concat_stream_url = ','.join(streams)
+            request_url = self.TWITCH_BASE_URL + self.multi_stream_param + 'channel=' + concat_stream_url + '&client_id=' + self.twitch_id
+            r = requests.get(request_url)
+            if r .status_code == 200:
+                data = r.json()
+                online_streams_raw = data['streams']
+                for stream in online_streams_raw:
+                    temp_dict = {}
+                    temp_dict['title'] = stream['channel']['status']
+                    temp_dict['game'] = stream['game']
+                    temp_dict['twitch_url'] = twitch_stream_url + str(stream['channel']['name'])
+                    live_stream_metadata[stream['channel']['name']] = temp_dict
+            live_streams.append(live_stream_metadata)
+            live_stream_diff = []
+            diff = []
+            for stream in live_streams:
+                for key, value in stream.items():
+                    diff.append(key)
+                    temp = []
+                    temp.append(key)
+                    temp.append('1')
+                    live_stream_diff.append(temp)
+            streams_diff = list(set(streams) - set(diff))
+            for item in streams_diff:
+                temp = []
+                temp.append(item)
+                temp.append('0')
+                live_stream_diff.append(temp)
+            db_diff = db.get_all_stream_status()['results'][0]
+            db_stream_diff = []
+            for item in db_diff:
+                temp = []
+                temp.append(item[0]['stream_alias'])
+                temp.append(item[0]['is_online'])
+                db_stream_diff.append(temp)
+            comp_live = []
+            comp_db = []
+            for item in live_stream_diff:
+                comp_live.append(str(item[0]) + ':' + str(item[1]))
+            for item in db_stream_diff:
+                comp_db.append(str(item[0]) + ':' + str(item[1]))
+            twitch_stream_diff = list(set(comp_live) - set(comp_db))
+            update_stream = []
+            for item in twitch_stream_diff:
+                update_stream.append(item.split(':'))
+            # query = db.update_live_streams(update_stream)
+            result = {}
+            result['live_streams'] = update_stream
+            result['live_stream_metadata'] = live_stream_metadata
+            return result
+            # if(query):
+            #     return update_stream
+            # else:
+            #     return False
 
     def get_live_streams(self, stream_arr, update=True):
         twitch_stream_url = 'https://twitch.tv/'
@@ -106,6 +177,8 @@ class Twitch():
         for item in live_streams:
             stream_diff_live.append(item[0] + ':' + str(item[1]))
         # Returns the live value of the stream status into stream_diff
+        print(stream_diff_live) ## DEBUG
+        print(stream_diff_db) ## DEBUG
         stream_diff = list(set(stream_diff_live) - set(stream_diff_db))
         update_stream = []
         for item in stream_diff:
@@ -248,18 +321,15 @@ class Twitch():
             # If exists in db don't add, just follow
             if(db.does_twitch_stream_exist(int(stream_id))):
                 print('StreamID: {}. Exists in db'.format(stream_id))
-                query = db.follow_twitch_stream(server_id, stream_alias)
-                if(len(query['errors'])):
-                    for item in query['errors']:
-                        if('exists' in item):
-                            print('Error: StreamID: {} already followed by ServerID {}'.format(stream_id, server_id))
-                            await self.bot.say('Error: **{}** is already being followed.'.format(stream_alias))
-                        else:
-                            print('Error: \"{}\" returned.'.format(item))
-                            await self.bot.say('Error: **\"{}\"** returned.'.format(item))
+                is_followed = db.is_stream_followed(server_id, stream_alias)
+                if(is_followed):
+                    print('Error: StreamID: {} already followed by ServerID {}'.format(stream_id, server_id))
+                    await self.bot.say('Error: **{}** is already being followed.'.format(stream_alias))
                 else:
-                    print('ServerID: {} successfully followed StreamID: {}'.format(server_id, stream_id))
-                    await self.bot.say('Successfully followed: **{}**.'.format(stream_alias))
+                    query = db.follow_twitch_stream(server_id, stream_alias)
+                    if(query):
+                        print('ServerID: {} successfully followed StreamID: {}'.format(server_id, stream_id))
+                        await self.bot.say('Successfully followed: **{}**.'.format(stream_alias))
             # If doens't exist in db, add then follow
             else:
                 print('StreamID: {} does not exist. Adding to DB now...'.format(stream_id))
@@ -299,6 +369,15 @@ class Twitch():
                     print(item)
                 await self.bot.say('Unknown error occured while removing {}'.format(stream))
 
+    @commands.command(name='testing2')
+    async def thing(self):
+        data = db.get_all_active_twitch_subs()
+        results = data['results']
+        streams = []
+        for stream in results[0]:
+            streams.append(stream[0]['stream_alias'])
+        self.get_live_stream_by_chunk(streams)
+
     async def twitch_notifier(self):
         """ Notifications for followed Twitch Streams
         Should note that I took a lot of this code from Zonbot on Github to learn about asyncio
@@ -310,18 +389,44 @@ class Twitch():
         await self.bot.wait_until_ready()
         while not self.bot.is_closed:
             async with self.notifier_lock:
+                data = db.get_all_active_twitch_subs()
+                results = data['results']
+                streams = []
+                for stream in results[0]:
+                    streams.append(stream[0]['stream_alias'])
+                stream_data = self.get_live_stream_by_chunk(streams)
+                live_streams = stream_data['live_streams']
+                stream_metadata = stream_data['live_stream_metadata']
+                live_parsing = []
+                for item in live_streams:
+                    live_parsing.append(item[0])
                 servers = db.get_all_servers()
+                server_locked_streams = {}
                 for server in servers:
                     server_id = server[0]['id']
                     default_channel = self.get_default_channel_obj(server_id)
-                    try:
-                        stream_aliases = self.get_followed_stream_aliases(server_id)
-                        live_streams = self.get_live_streams(stream_aliases)
-                    except Exception as e:
-                        print('Error occured in notifier loop')
-                        print(e)
-                    for item in live_streams:
-                        await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
+                    stream_aliases = self.get_followed_stream_aliases(server_id)
+                    for item in stream_aliases:
+                        if item[0] in live_parsing and item[1] == 0:
+                            name = item[0]
+                            title = stream_metadata[name]['title']
+                            game = stream_metadata[name]['game']
+                            twitch_url = stream_metadata[name]['twitch_url']
+                            await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at {}'.format(name, game, title, twitch_url))
+                db.update_live_streams(live_streams)
+                #     server_streams = []
+                #     for item in stream_aliases:
+                #         server_streams.append(item)
+                #         server_locked_streams[server_id] = server_streams
+                # for key, streams_to_parse in server_locked_streams.items():
+                #     default_channel = self.get_default_channel_obj(key)
+                #     try:
+                #         live_streams[key] = self.get_live_streams(streams_to_parse)
+                #     except Exception as e:
+                #         print('Error occured in notifier loop')
+                #         print(e)
+                #     for item in live_streams:
+                #         await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
             await asyncio.sleep(60)
     #</editor-fold>
 
