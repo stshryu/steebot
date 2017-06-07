@@ -272,7 +272,7 @@ def get_followed_streams_aliases(server_id):
     sql = """
         SELECT twitch_subs.server_id, twitch_streams.is_online, twitch_subs.stream_alias FROM twitch_subs
         INNER JOIN twitch_streams on twitch_streams.stream_alias = twitch_subs.stream_alias
-        WHERE server_id = ?;
+        WHERE server_id = ? AND twitch_subs.is_active = 1;
         """
     try:
         cursor.execute(sql, (server_id,))
