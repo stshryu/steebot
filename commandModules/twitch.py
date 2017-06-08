@@ -3,6 +3,7 @@ import botMain
 import config
 from discord.ext import commands
 import time
+from datetime import date, datetime
 import commandModules.db_driver as db
 import requests
 import asyncio
@@ -229,6 +230,7 @@ class Twitch():
                 temp_arr = []
                 temp_arr.append(item[0]['stream_alias'])
                 temp_arr.append(item[0]['is_online'])
+                temp_arr.append(item[0]['ts_modified'])
                 stream_aliases.append(temp_arr)
         print('Found {} streams followed by ServerID: {}'.format(len(stream_aliases), server_id))
         return stream_aliases
@@ -277,37 +279,7 @@ class Twitch():
         else:
             await self.bot.say('Not following any streams on this server. If you want to add a stream type:\n `!twitch follow <stream>`')
 
-    @commands.command(name="refresh", pass_context=True)
-    @twitch_permission()
-    async def refresh_followed_streams(self, ctx):
-        """ Force refresh on all followed streams on a server (notifier cron does the same thing). """
-        server_id = ctx.message.server.id
-        # stream_ids = self.get_followed_stream_ids(server_id) stream id's not used in twitch???
-        stream_aliases = self.get_followed_stream_aliases(server_id)
-        live_streams = self.get_live_streams(stream_aliases)
-        for item in live_streams:
-            await self.bot.say('**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
-
-    # There has to be a better way to deal with bot output. For example, I had to write
-    # a bunch of slightly different bot.say commands for each type of output which makes
-    # the code look messy and ugly
-    @commands.command(name="live", pass_context=True)
-    @twitch_permission()
-    async def live_followed_streams(self, ctx):
-        """ Gets all live streams followed by a server. """
-        server_id = ctx.message.server.id
-        stream_aliases = self.get_followed_stream_aliases(server_id)
-        all_live_streams = self.get_live_streams(stream_aliases, False)
-        if (len(all_live_streams) > 0):
-            for item in all_live_streams:
-                if not item['game']:
-                    await self.bot.say('**{}** is currently streaming: {} at {}'.format(item['name'], item['title'], item['twitch_url']))
-                else:
-                    await self.bot.say('**{}** is currently playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
-        else:
-            await self.bot.say('No followed streams are currently live right now')
-
-    @twitch.command(name="follow", pass_context=True)
+    @twitch.command(name="add", pass_context=True)
     @twitch_permission()
     async def add_twitch_stream(self, ctx, stream : str):
         """ Adds twitch stream to db (if it does not exist) then follows stream and updates """
@@ -350,7 +322,7 @@ class Twitch():
             print('Twitch stream {} not found'.format(stream))
             await self.bot.say('Twitch Error: Stream for **{}** not found'.format(stream))
 
-    @twitch.command(name="unfollow", pass_context=True)
+    @twitch.command(name="remove", pass_context=True)
     @twitch_permission()
     async def remove_twitch_stream(self, ctx, stream : str):
         """ Unfollows stream from DB """
@@ -369,18 +341,9 @@ class Twitch():
                     print(item)
                 await self.bot.say('Unknown error occured while removing {}'.format(stream))
 
-    @commands.command(name='testing2')
-    async def thing(self):
-        data = db.get_all_active_twitch_subs()
-        results = data['results']
-        streams = []
-        for stream in results[0]:
-            streams.append(stream[0]['stream_alias'])
-        self.get_live_stream_by_chunk(streams)
-
     async def twitch_notifier(self):
         """ Notifications for followed Twitch Streams
-        Should note that I took a lot of this code from Zonbot on Github to learn about asyncio
+        Should note that I took a lot of this code from Zonbot to learn about asyncio
         events in Python
 
         Also send_message() requires a channel object not just the channel ID
@@ -407,12 +370,25 @@ class Twitch():
                     default_channel = self.get_default_channel_obj(server_id)
                     stream_aliases = self.get_followed_stream_aliases(server_id)
                     for item in stream_aliases:
+                        ts_modified = item[2]
+                        split = ts_modified.split(' ')
+                        date_split = split[0].split('-')
+                        time_split = split[1].split(':')
+                        now_utc = datetime.utcnow()
+                        year = int(date_split[0].lstrip('0'))
+                        month = int(date_split[1].lstrip('0'))
+                        day = int(date_split[2].lstrip('0'))
+                        hour = int(time_split[0].lstrip('0'))
+                        minute = int(time_split[1].lstrip('0'))
+                        last_modified = datetime(year, month, day, hour, minute)
+                        last_notified = int((now_utc - last_modified).total_seconds()/60)
                         if item[0] in live_parsing and item[1] == 0:
                             name = item[0]
                             title = stream_metadata[name]['title']
                             game = stream_metadata[name]['game']
                             twitch_url = stream_metadata[name]['twitch_url']
-                            await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at {}'.format(name, game, title, twitch_url))
+                            if(last_notified > 15):
+                                await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at <{}>'.format(name, game, title, twitch_url))
                 db.update_live_streams(live_streams)
                 #     server_streams = []
                 #     for item in stream_aliases:
