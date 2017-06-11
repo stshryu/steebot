@@ -7,6 +7,9 @@ from datetime import date, datetime
 import commandModules.db_driver as db
 import requests
 import asyncio
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4) ## DEBUGGING
 
 def twitch_permission():
     def predicate(ctx):
@@ -81,6 +84,7 @@ class Twitch():
         for streams in stream_chunked:
             concat_stream_url = ','.join(streams)
             request_url = self.TWITCH_BASE_URL + self.multi_stream_param + 'channel=' + concat_stream_url + '&client_id=' + self.twitch_id
+            pp.pprint(request_url) ## DEBUGGING
             r = requests.get(request_url)
             if r .status_code == 200:
                 data = r.json()
@@ -92,6 +96,7 @@ class Twitch():
                     temp_dict['twitch_url'] = twitch_stream_url + str(stream['channel']['name'])
                     live_stream_metadata[stream['channel']['name']] = temp_dict
             live_streams.append(live_stream_metadata)
+            pp.pprint('Currently live streams: {}'.format(live_stream_metadata)) ## DEBUGGING
             live_stream_diff = []
             diff = []
             for stream in live_streams:
@@ -128,6 +133,7 @@ class Twitch():
             result = {}
             result['live_streams'] = update_stream
             result['live_stream_metadata'] = live_stream_metadata
+            pp.pprint('Return query is here: {}'.format(result)) ## DEBUGGING
             return result
             # if(query):
             #     return update_stream
@@ -364,7 +370,7 @@ class Twitch():
                 for item in live_streams:
                     live_parsing.append(item[0])
                 servers = db.get_all_servers()
-                server_locked_streams = {}
+                print('Live parsing stuff is here: '.format(live_parsing))
                 for server in servers:
                     server_id = server[0]['id']
                     default_channel = self.get_default_channel_obj(server_id)
@@ -390,19 +396,6 @@ class Twitch():
                             if(last_notified > 15):
                                 await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at <{}>'.format(name, game, title, twitch_url))
                 db.update_live_streams(live_streams)
-                #     server_streams = []
-                #     for item in stream_aliases:
-                #         server_streams.append(item)
-                #         server_locked_streams[server_id] = server_streams
-                # for key, streams_to_parse in server_locked_streams.items():
-                #     default_channel = self.get_default_channel_obj(key)
-                #     try:
-                #         live_streams[key] = self.get_live_streams(streams_to_parse)
-                #     except Exception as e:
-                #         print('Error occured in notifier loop')
-                #         print(e)
-                #     for item in live_streams:
-                #         await self.bot.send_message(default_channel, '**{}** is now playing **{}**: {} at {}'.format(item['name'], item['game'], item['title'], item['twitch_url']))
             await asyncio.sleep(60)
     #</editor-fold>
 
