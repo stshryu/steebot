@@ -73,6 +73,8 @@ def update_live_streams(streams):
         """ % placeholders
     stream_offline.insert(0, today)
     stream_online.insert(0, today)
+    print('Stream offline: {}'.format(stream_offline)) ## DEBUGGING
+    print('Stream online: {}'.format(stream_online)) ## DEBUGGING
     try:
         if(len(sql_offline) > 1):
             cursor.execute(sql_offline, stream_offline)
