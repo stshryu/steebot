@@ -370,7 +370,8 @@ class Twitch():
                 for item in live_streams:
                     live_parsing.append(item[0])
                 servers = db.get_all_servers()
-                print('Live parsing stuff is here: '.format(live_parsing))
+                pp.pprint('Current time is: {}'.format(time.time()))
+                pp.pprint('Live parsing stuff is here: {}'.format(live_parsing))
                 for server in servers:
                     server_id = server[0]['id']
                     default_channel = self.get_default_channel_obj(server_id)
