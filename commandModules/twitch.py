@@ -129,95 +129,11 @@ class Twitch():
             update_stream = []
             for item in twitch_stream_diff:
                 update_stream.append(item.split(':'))
-            # query = db.update_live_streams(update_stream)
             result = {}
             result['live_streams'] = update_stream
             result['live_stream_metadata'] = live_stream_metadata
             pp.pprint('Return query is here: {}'.format(result)) ## DEBUGGING
             return result
-            # if(query):
-            #     return update_stream
-            # else:
-            #     return False
-
-    def get_live_streams(self, stream_arr, update=True):
-        twitch_stream_url = 'https://twitch.tv/'
-        stream_arr = stream_arr
-        stream_diff_db = []
-        live_streams = []
-        live_stream_metadata = {}
-        offline = 0
-        online = 0
-        for item in stream_arr:
-            stream_diff_db.append(item[0] + ':' + str(item[1]))
-        for stream in stream_arr:
-            stream_name = stream[0]
-            temp_arr = []
-            temp_arr.append(stream[0])
-            request_url = Twitch.TWITCH_BASE_URL + Twitch.stream_param + str(stream_name) + '?client_id=' + self.twitch_id
-            r = requests.get(request_url)
-            if r.status_code == 200:
-                data = r.json()
-                if data['stream'] == None:
-                    offline = offline + 1
-                    temp_arr.append('0')
-                else:
-                    online = online + 1
-                    temp_dict = {}
-                    temp_dict['title'] = data['stream']['channel']['status']
-                    temp_dict['game'] = data['stream']['game']
-                    live_stream_metadata[stream_name] = temp_dict
-                    temp_arr.append('1')
-            live_streams.append(temp_arr)
-        # If we want all live streams regardless of last DB status
-        if not update:
-            all_live_streams = []
-            for item in live_stream_metadata:
-                temp_dict = {}
-                temp_dict['name'] = item
-                temp_dict['title'] = live_stream_metadata[item]['title']
-                temp_dict['game'] = live_stream_metadata[item]['game']
-                temp_dict['twitch_url'] = twitch_stream_url + item
-                all_live_streams.append(temp_dict)
-            return all_live_streams
-        stream_diff_live = []
-        for item in live_streams:
-            stream_diff_live.append(item[0] + ':' + str(item[1]))
-        # Returns the live value of the stream status into stream_diff
-        print(stream_diff_live) ## DEBUG
-        print(stream_diff_db) ## DEBUG
-        stream_diff = list(set(stream_diff_live) - set(stream_diff_db))
-        update_stream = []
-        for item in stream_diff:
-            temp_split = item.split(':')
-            temp_arr = []
-            temp_arr.append(temp_split[0])
-            temp_arr.append(temp_split[1])
-            update_stream.append(temp_arr)
-        output_stream = []
-        for item in update_stream:
-            if item[1] == '1':
-                temp_dict = {}
-                temp_dict['name'] = item[0]
-                temp_dict['twitch_url'] = twitch_stream_url + item[0]
-                temp_dict['title'] = live_stream_metadata[item[0]]['title']
-                temp_dict['game'] = live_stream_metadata[item[0]]['game']
-                output_stream.append(temp_dict)
-        query = db.update_live_streams(update_stream)
-        if(query['results']):
-            print('Successfully wrote to DB: {}/{} stream[s] online. {}/{} stream[s] offline'.format(online, len(stream_arr), offline, len(stream_arr)))
-        return output_stream
-
-    def get_followed_stream_ids(self, server_id):
-        server_id = server_id
-        print('Getting followed streams for ServerID: {}'.format(server_id))
-        followed_streams = db.get_followed_streams_id(server_id)
-        stream_ids = []
-        if(len(followed_streams) > 0):
-            for item in followed_streams['results']:
-                stream_ids.append(item[0]['stream_id'])
-        print('Found {} streams followed by ServerID: {}'.format(len(stream_ids), server_id))
-        return stream_ids
 
     def unfollow_stream(self, server_id, stream_alias):
         query = db.unfollow_stream(server_id, stream_alias)
@@ -240,15 +156,6 @@ class Twitch():
                 stream_aliases.append(temp_arr)
         print('Found {} streams followed by ServerID: {}'.format(len(stream_aliases), server_id))
         return stream_aliases
-
-    def get_stream_data(self, stream_array):
-        """ Takes an array of stream_aliases to parse from Twitch """
-        stream_metadata = []
-        for stream in stream_array:
-            stream_data = self.verify_stream(stream)
-            stream_metadata.appned(stream_data)
-        return stream_metadata
-
     #</editor-fold>
 
     #<editor-fold> Twitch Commands
