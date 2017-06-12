@@ -347,3 +347,71 @@ def get_all_servers():
     cursor.execute(sql)
     return format_data(cursor)
 #</editor-fold>
+
+#<editor-fold> DATABASE OPERATIONS QUOTES
+def add_quote(quote_text, user_id, server_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    today = datetime.utcnow()
+    sql = """
+        INSERT INTO quotes (origin_server_id, quote_text, author, is_active, ts_created, ts_modified)
+        VALUES (?, ?, ?, 1, ?, ?);
+        """
+    try:
+        cursor.execute(sql, (server_id, quote_text, user_id, today, today))
+        result['results'].append(True)
+    except Exception as e:
+        result['errors'].append(e)
+    return result
+
+def get_random_quote():
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+
+def get_all_quotes_by_server(server_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT id, quote_text FROM quotes
+        WHERE origin_server_id = ?;
+        """
+    try:
+        cursor.execute(sql, (server_id,))
+        result['results'] = format_data(cursor)
+    except Exception as e:
+        result['errors'].append(e)
+    return result
+
+def get_all_quotes_by_user(user_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+    result = {}
+    result['results'] = []
+    result['errors'] = []
+    sql = """
+        SELECT id, quote_text FROM quotes
+        WHERE author = ?;
+        """
+    try:
+        cursor.execute(sql, (user_id,))
+        result['results'] = format_data(cursor)
+    except Exception as e:
+        result['errors'].append(e)
+    return result
+
+# Maybe to be implemented in the future?
+def get_quote_by_partial_text(partial_string):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+
+def remove_quote(quote_id):
+    connection = sqlite3_connect(db_path)
+    cursor = connection.cursor()
+
+#</editor-fold>
