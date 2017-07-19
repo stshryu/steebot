@@ -24,7 +24,7 @@ class Bot(commands.Bot):
             self.load_extension('commandModules.{0}'.format(name))
         load_extension('web_requests')
         load_extension('util')
-        load_extension('twitch')
+        #load_extension('twitch')
         load_extension('interact')
 
     def initial_listener(self):
