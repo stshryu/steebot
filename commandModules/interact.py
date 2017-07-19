@@ -4,20 +4,17 @@ import config
 from discord.ext import commands
 import time
 import requests
-
-### Testing admin privileges
-def is_admin():
-    def predicate(ctx):
-        if ctx.message.author.id == config.Admin:
-            return True
-        else:
-            return False
-    return commands.check(predicate)
+import commandModules.message_interface as message_interface
+import checks
 
 class Interact():
 
+    CONSTANT_CLAP =     'clap'
+    CONSTANT_TOILET =   'toilet'
+
     def __init__(self, bot):
         self.bot = bot
+        self.message = message_interface.message_handler()
 
     @commands.command(name="clap", pass_context=True)
     async def sjw_retarded_clap(self, ctx):
@@ -26,24 +23,37 @@ class Interact():
         message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        clap = ':clap:'
-        split = message.split(' ')
-        result_msg = []
-        for item in split[1:]:
-            result_msg.append(clap)
-            result_msg.append(item)
-        result_msg.append(clap)
-        response = ''.join(map(str, result_msg))
-        await self.bot.say('**{}** said: **{}**'.format(author, response))
+        response = self.message.createEmojiMessage(author, message, Interact.CONSTANT_CLAP)
+        await self.bot.say(response)
 
-    @commands.command(name="steebclap", pass_context=True)
-    async def steebclap(self, ctx):
-        """ What to be a retard like kevin? Well now you can with !steebclap """
+    @commands.command(name="toilet", pass_context=True)
+    @checks.is_owner()
+    async def toilet(self, ctx):
+        """ The magical toilet """
+
+        message = ctx.message.content
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message.createEmojiMessage(author, message, Interact.CONSTANT_TOILET)
+        await self.bot.say(response)
+
+    @commands.command(name="timclap", pass_context=True)
+    async def timclap(self, ctx):
+        """ Want to be a retard like Ryan, Gary, and Kevin? Well now you can with !timclap """
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        message = ':clap:don\'t:clap:pretend:clap:to:clap:be:clap:an:clap:OkBread:clap:unless:clap:you:clap:poop:clap:uncontrollably:clap:'
-        await self.bot.say('**{}** says: **{}**'.format(author, message))
+        response = self.message.returnTimClap(author)
+        await self.bot.say(response)
+
+    @commands.command(name="steebclap", pass_context=True)
+    async def steebclap(self, ctx):
+        """ Want to be a retard like kevin? Well now you can with !steebclap """
+
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message.returnSteebClap(author)
+        await self.bot.say(response)
 
 def setup(bot):
     bot.add_cog(Interact(bot))

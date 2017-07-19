@@ -9,12 +9,10 @@ import requests
 import asyncio
 import pprint
 
-pp = pprint.PrettyPrinter(indent=4) ## DEBUGGING
-
 def twitch_permission():
     def predicate(ctx):
-        # if ctx.message.author.id == config.Admin: ## For debugging only
-        #     return True
+        if ctx.message.author.id == config.ownerID:
+            return True
         if ctx.message.channel.is_private: return True
         try:
             return ctx.message.channel.permissions_for(ctx.message.author).manage_messages
