@@ -4,10 +4,12 @@ import config
 from discord.ext import commands
 import time
 from datetime import date, datetime
-import commandModules.db_driver as db
+import commandModules.db_driver_mysql as mysql
 import requests
 import asyncio
 import pprint
+
+## TODO: db_driver as db was changed to db_driver_mysql as mysql (keep in mind for future refactor)
 
 def twitch_permission():
     def predicate(ctx):

@@ -31,6 +31,11 @@ def format_data(cursor_object):
     return result_data
 #</editor-fold>
 
+#<editor-fold> DATABASE OPERATIONS DnD
+def create_new_session(date):
+    pass
+#</editor-fold>
+
 #<editor-fold DATABASE OPERATIONS DISCORD/ADMINISTRATIVE
 def add_server(server_id, server_alias):
     connection = connect_mysql()
@@ -70,7 +75,3 @@ def get_active_servers():
     cursor.execute(sql)
     return format_data(cursor)
 #</editor-fold>
-
-add_server('151132568920522752', 'test-server')
-add_server('112032459385782272', 'waifuCentral')
-pprint.pprint(get_active_servers())
