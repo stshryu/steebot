@@ -32,8 +32,19 @@ def format_data(cursor_object):
 #</editor-fold>
 
 #<editor-fold> DATABASE OPERATIONS DnD
-def create_new_session(date):
-    pass
+def create_new_session(server_id, date, user_id):
+    connection = connect_mysql()
+    cursor = connection.cursor()
+    time_now = datetime.utcnow()
+    sql = """
+        INSERT INTO dnd_db(server_id, is_active, ts_created, ts_modified, author, set_date)
+        VALuES (%s, 1, %s, %s, %s, %s)
+        """
+    args = [server_id, time_now, time_now, user_id, date]
+    cursor.execute(sql, args)
+    connection.commit()
+    connection.close()
+
 #</editor-fold>
 
 #<editor-fold DATABASE OPERATIONS DISCORD/ADMINISTRATIVE
