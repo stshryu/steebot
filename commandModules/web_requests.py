@@ -62,9 +62,14 @@ class Web_Requests():
         r = requests.get(request_url)
         if r.status_code == 200:
             data = r.json()
-            nick_mmr = data['solo_competitive_rank']
-            adjusted_mmr = int(nick_mmr) - 1000
-            await self.bot.say('Nick\'s adjusted mmr is: **{}**'.format(adjusted_mmr))
+            nick_solo_mmr = int(data['solo_competitive_rank'])
+            nick_party_mmr = int(data['competitive_rank'])
+            can_nick_play_with_himself = ""
+            if nick_solo_mmr - nick_party_mmr > 2000:
+                can_nick_play_with_himself = "And no, he cannot diddle his own fiddle"
+            else:
+                can_nick_play_with_himself = "And yes he can diddle his own fiddle"
+            await self.bot.say('Nick\'s solo mmr is: **{}**, his party mmr is: **{}**. {}'.format(nick_solo_mmr, nick_party_mmr, can_nick_play_with_himself))
         else:
             print('Error getting profile')
 
