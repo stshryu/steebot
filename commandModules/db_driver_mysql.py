@@ -45,6 +45,16 @@ def create_new_session(server_id, date, user_id):
     connection.commit()
     connection.close()
 
+def edit_existing_session(id, server_id, user_id):
+    connection = connect_mysql()
+    cursor = connection.cursor()
+    time_now = datetime.utcnow()
+
+def get_next_session(server_id, user_id):
+    connection = connect_mysql()
+    cursor = connection.cursor()
+    time_now = datetime.utcnow()
+
 #</editor-fold>
 
 #<editor-fold DATABASE OPERATIONS DISCORD/ADMINISTRATIVE
