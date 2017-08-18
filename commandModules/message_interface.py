@@ -40,16 +40,27 @@ class message_handler:
             response = ''.join(map(str, output_msg))
             return self.clap_template.format(author, response)
 
-    def returnSteebClap(self, author):
-        message = 'don\'t pretend to be an OkBread unless you poop uncontrollably'
-        split = message.split(' ')
-        output_msg = []
-        for item in split:
+    def returnSteebClap(self, author, _type=0):
+        if _type == 0:
+            message = 'don\'t pretend to be an OkBread unless you poop uncontrollably'
+            split = message.split(' ')
+            output_msg = []
+            for item in split:
+                output_msg.append(self.emojiClap)
+                output_msg.append(item)
             output_msg.append(self.emojiClap)
-            output_msg.append(item)
-        output_msg.append(self.emojiClap)
-        response = ''.join(map(str, output_msg))
-        return self.clap_template.format(author, response)
+            response = ''.join(map(str, output_msg))
+            return self.clap_template.format(author, response)
+        elif _type == 1:
+            message = "me name steeb <@" + config.ownerID + "> me like extra cheese <@" + config.ownerID + ">"
+            split = message.split(' ')
+            output_msg = []
+            for item in split:
+                output_msg.append(self.emojiPoop)
+                output_msg.append(item)
+            output_msg.append(self.emojiToilet)
+            response = ''.join(map(str, output_msg))
+            return self.clap_template.format(author, response)
 
     def returnTimClap(self, author):
         message = 'member tim? always online for video games tim? i member. good ole days tim the tim timmerson'
