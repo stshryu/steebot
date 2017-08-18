@@ -32,6 +32,12 @@ def format_data(cursor_object):
 #</editor-fold>
 
 #<editor-fold> DATABASE OPERATIONS DnD
+# Think about adding another DB table that stores attendees of the session
+# !attending could return a list of people who are attending, and commands like
+# !rsvp or !unrsvp could allow people to reserver or cancel a spot. Author
+# can specify the amount of people that can sign up for a session. (Add that into
+# create_new_session() and have it affect the new db).
+# TODO: Add a new param for new session (max_attending).
 def create_new_session(server_id, date, user_id):
     connection = connect_mysql()
     cursor = connection.cursor()
