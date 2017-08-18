@@ -27,7 +27,7 @@ class Interact():
         await self.bot.say(response)
 
     @commands.command(name="toilet", pass_context=True)
-    @checks.is_owner()
+    #@checks.is_owner() #do stuff with this later
     async def toilet(self, ctx):
         """ The magical toilet """
 
