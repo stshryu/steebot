@@ -31,6 +31,9 @@ def format_data(cursor_object):
     return result_data
 #</editor-fold>
 
+#<editor-fold> DATABASE OPERATIONS TWITCH
+#</editor-fold>
+
 #<editor-fold> DATABASE OPERATIONS DnD
 # Think about adding another DB table that stores attendees of the session
 # !attending could return a list of people who are attending, and commands like
