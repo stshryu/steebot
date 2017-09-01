@@ -1,6 +1,6 @@
 import discord
 import botMain
-import commandModules.db_driver as db
+import commandModules.db_driver_mysql as db
 import config
 from discord.ext import commands
 import time

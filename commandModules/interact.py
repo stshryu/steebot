@@ -6,6 +6,7 @@ import time
 import requests
 import commandModules.message_interface as message_interface
 import checks
+import commandModules.db_driver_mysql as mysql
 
 class Interact():
 

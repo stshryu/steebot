@@ -55,7 +55,7 @@ class Web_Requests():
     ### in the name instead of the actual ID
     @commands.command(name="nick", pass_context=True)
     async def nick_sucks_at_dota(self, ctx):
-        """ Made because honestly, Nick is one of the worst Dota players I know """
+        """ Made because honestly, Nick is one of the best Dota players I know """
 
         # Nick's own personal url to parse his opendota
         request_url = 'https://api.opendota.com/api/players/52926379'
