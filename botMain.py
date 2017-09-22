@@ -26,6 +26,7 @@ class Bot(commands.Bot):
         load_extension('util')
         #load_extension('twitch')
         load_extension('interact')
+        load_extension('markov_generator')
 
     def initial_listener(self):
         self.add_listener(self.startup_message, 'on_ready')

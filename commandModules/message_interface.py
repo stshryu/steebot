@@ -17,6 +17,9 @@ class message_handler:
         # Twitch Templates
         self.twitch_notification_template = ""
         self.twitch_success_template = "Successfully {} **{}**"
+        # Markov Templates
+        self.markov_template = "**Imitating {}**: **{}**"
+        self.markov_msg_error = "You must specifiy a user to imitate or specify \"me\"."
 
     #<editor-fold> Emoji Messages
 
@@ -72,4 +75,12 @@ class message_handler:
         output_msg.append(self.emojiClap)
         response = ''.join(map(str, output_msg))
         return self.clap_template.format(author, response)
+    #</editor-fold>
+
+    #<editor-fold> Markov messages
+    def returnMarkovMessage(self, author, response):
+        return self.markov_template.format(author, response)
+
+    def returnMarkovMsgError(self):
+        return self.markov_msg_error
     #</editor-fold>
