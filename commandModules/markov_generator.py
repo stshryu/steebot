@@ -46,7 +46,8 @@ class Markov():
             await self.bot.say(response)
         elif message[1].casefold() == 'me'.casefold():
             user_id = ctx.message.author.id
-            print(user_id)
+            async for msg in self.bot.logs_from(ctx.message.channel):
+                print(msg.content)
         else:
             user_id = message[1][2:-1]
             print(user_id)
