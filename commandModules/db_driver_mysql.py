@@ -35,7 +35,39 @@ def format_data(cursor_object):
 #</editor-fold>
 
 #<editor-fold> DATABASE OPERATIONS MARKOV
-#<editor-fold>
+def check_markov_data(user_id, server_id):
+    connection = connect_mysql()
+    cursor = connection.cursor()
+    time_now = datetime.utcnow()
+    sql = """
+        SELECT 1 FROM markov_raw_data
+        WHERE user_id = %s AND server_id = %s
+        """
+    args = [user_id, server_id]
+    cursor.execute(sql, args)
+    updated_row_count = cursor.rowcount
+    cursor.close()
+    connection.commit()
+    connection.close()
+    return updated_row_count
+
+def add_markov_text(user_id, server_id):
+    connection = connect_mysql()
+    cursor = connection.cursor()
+    time_now = datetime.utcnow()
+    sql = """
+        INSERT IGNORE INTO markov_raw_data (user_id, server_id, user_text_1, user_text_2, user_text_3, ts_created, ts_modified)
+        VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """
+    args = [user_id, server_id, text1, text2, text3, time_now, time_now]
+    cursor.execute(sql, args)
+    updated_row_count = cursor.rowcount
+    cursor.close()
+    connection.commit()
+    connection.close()
+    return updated_row_count
+
+#</editor-fold>
 
 #<editor-fold> DATABASE OPERATIONS DnD
 # Think about adding another DB table that stores attendees of the session

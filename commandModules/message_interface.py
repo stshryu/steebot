@@ -18,8 +18,8 @@ class message_handler:
         self.twitch_notification_template = ""
         self.twitch_success_template = "Successfully {} **{}**"
         # Markov Templates
-        self.markov_template = "**Imitating {}**: **{}**"
-        self.markov_msg_error = "You must specifiy a user to imitate or specify \"me\"."
+        self.markov_template = "**Imitating <@{}>**: **{}**"
+        self.markov_msg_error = "You must specifiy a user to imitate or specify \"me\". ({})"
 
     #<editor-fold> Emoji Messages
 
@@ -78,9 +78,9 @@ class message_handler:
     #</editor-fold>
 
     #<editor-fold> Markov messages
-    def returnMarkovMessage(self, author, response):
+    def returnMarkovChain(self, author, response):
         return self.markov_template.format(author, response)
 
-    def returnMarkovMsgError(self):
-        return self.markov_msg_error
+    def returnMarkovMsgError(self, error_code):
+        return self.markov_msg_error.format('Error: '+error_code)
     #</editor-fold>
