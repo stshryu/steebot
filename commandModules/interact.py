@@ -81,6 +81,7 @@ class Interact():
         """ Cowsay functionality """
 
         message = ctx.message.content
+        message = message.replace('\n', ' ')
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
         response = self.message.returnCowsay(message, author)
