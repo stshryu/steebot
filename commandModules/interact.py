@@ -65,5 +65,26 @@ class Interact():
         response = self.message.returnSteebClap(author, 1)
         await self.bot.say(response)
 
+    @commands.command(name="steebclap3", pass_context=True)
+    async def steebclap2(self, ctx):
+        """ Want to be a retard like Steebert? Well now you can with !steebclap3 """
+
+        message = ctx.message.content
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message.returnSteebClap(message, author, 2)
+        await self.bot.say(response)
+
+
+    @commands.command(name="cowsay", pass_context=True)
+    async def cowsay(self, ctx):
+        """ Cowsay functionality """
+
+        message = str(ctx.message.content)
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message.returnCowsay(message, author)
+        await self.bot.say(response)
+
 def setup(bot):
     bot.add_cog(Interact(bot))
