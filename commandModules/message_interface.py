@@ -1,6 +1,7 @@
 import discord
 import botMain
 import config
+import commandModules.cowsay_driver as cowsay
 
 # TODO: Add a DB event for messages like clap so users can make their own emoji messages
 
@@ -17,9 +18,10 @@ class message_handler:
         # Twitch Templates
         self.twitch_notification_template = ""
         self.twitch_success_template = "Successfully {} **{}**"
+        # Cowsay Templates
+        self.default_image = [[' ', '\\', ' ', ' ', ' ', '^', '_', '_', '^'], [' ', ' ', '\\', ' ', ' ', '(', 'o', 'o', ')', '\\', '_', '_', '_', '_', '_', '_', '_'], [' ', ' ', ' ', ' ', ' ', '(', '_', '_', ')', '\\', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ')', '\\', '/', '\\'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', '-', '-', '-', '-', 'w', ' ', '|'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', ' ', ' ', ' ', ' ', ' ', '|', '|'],[1,6],[1,7],[3,7]]
 
     #<editor-fold> Emoji Messages
-
     def createEmojiMessage(self, author, message, _type):
         if _type == 'clap':
             split = message.split(' ')
@@ -61,6 +63,11 @@ class message_handler:
             output_msg.append(self.emojiToilet)
             response = ''.join(map(str, output_msg))
             return self.clap_template.format(author, response)
+        elif _type == 2:
+            message = ":ballot_box_with_check:NEW JOB <@" + config.ownerID + ">:ballot_box_with_check:NEW CAT <@" \
+                        + config.ownerID + "> :ballot_box_with_check:NO POOP <@" + config.ownerID + ">:ballot_box_with_check:" \
+                        + "MUST BE NEW <@" + config.ownerID + ">:100: :100: :ok_hand:"
+            return self.clap_template.format(author, message)
 
     def returnTimClap(self, author):
         message = 'member tim? always online for video games tim? i member. good ole days tim the tim timmerson'
@@ -72,4 +79,11 @@ class message_handler:
         output_msg.append(self.emojiClap)
         response = ''.join(map(str, output_msg))
         return self.clap_template.format(author, response)
+
+    def returnCowsay(self, message, author):
+        flags = cowsay.msgParser(message)
+        message_ = cowsay.messageEngine(flags)
+        response = cowsay.imageEngine(message_, self.default_image, flags)
+        return response
+
     #</editor-fold>
