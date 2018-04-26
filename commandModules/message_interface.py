@@ -81,9 +81,14 @@ class message_handler:
         return self.clap_template.format(author, response)
 
     def returnCowsay(self, message, author):
+        # Cowsay templates must be refreshsed?? Or something because they no longer work
+        # with a globally asigned image
+        image = [[' ', '\\', ' ', ' ', ' ', '^', '_', '_', '^'], [' ', ' ', '\\', ' ', ' ', '(', 'o', 'o', ')', '\\', '_', '_', '_', '_', '_', '_', '_'], [' ', ' ', ' ', ' ', ' ', '(', '_', '_', ')', '\\', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ')', '\\', '/', '\\'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', '-', '-', '-', '-', 'w', ' ', '|'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', ' ', ' ', ' ', ' ', ' ', '|', '|'],[1,6],[1,7],[3,7]]
         flags = cowsay.msgParser(message)
+        if('Error:' in flags):
+            return flags
         message_ = cowsay.messageEngine(flags)
-        response = cowsay.imageEngine(message_, self.default_image, flags)
+        response = cowsay.imageEngine(message_, image, flags)
         return response
 
     #</editor-fold>

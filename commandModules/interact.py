@@ -80,7 +80,7 @@ class Interact():
     async def cowsay(self, ctx):
         """ Cowsay functionality """
 
-        message = str(ctx.message.content)
+        message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
         response = self.message.returnCowsay(message, author)
