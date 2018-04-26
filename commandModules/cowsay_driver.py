@@ -1,3 +1,5 @@
+import re
+
 # Internal Cowsay Constants
 FLAG_N = 1
 FLAG_W = 2
@@ -22,6 +24,10 @@ def msgParser(message):
     }
     # Remove the command from message
     no_cmd = message.split(' ')[1:]
+    user_id = r"(<@)\d+(>)"
+    emote = r"[:].+[:]"
+    if re.search(user_id, ''.join(no_cmd)) or re.search(emote, ''.join(no_cmd)):
+        return "Error: @mentions and :emotes: are not allowed"
     # Loop through parsed message for flags
     no_msg = []
     indexes_to_remove = []
@@ -221,16 +227,3 @@ def imageEngine(message, img_input, options):
     response_string = response_string + '\n```'
 
     return response_string
-
-# # ###### TESTING
-# default_image = [[' ', '\\', ' ', ' ', ' ', '^', '_', '_', '^'], [' ', ' ', '\\', ' ', ' ', '(', 'o', 'o', ')', '\\', '_', '_', '_', '_', '_', '_', '_'], [' ', ' ', ' ', ' ', ' ', '(', '_', '_', ')', '\\', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ')', '\\', '/', '\\'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', '-', '-', '-', '-', 'w', ' ', '|'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', ' ', ' ', ' ', ' ', ' ', '|', '|'],[1,6],[1,7],[3,7]]
-#
-# test = "!cowsay hello"
-#
-# flags = msgParser(test)
-#
-# message = messageEngine(flags)
-#
-# response = imageEngine(message, default_image, flags)
-#
-# print(response)
