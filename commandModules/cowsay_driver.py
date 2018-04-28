@@ -27,7 +27,7 @@ Cow Flags: \n \
 -d                    Dead(X)\n \
 -p                    Paranoid(@)\n \
 -t                    Tired(-)\n \
--w                    Wired(O)\n \
+-w                    Wired(O)\
 ```"
 
 def doesContainHelp(message):
