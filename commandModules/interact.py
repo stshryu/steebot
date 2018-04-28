@@ -19,7 +19,7 @@ class Interact():
 
     @commands.command(name="clap", pass_context=True)
     async def sjw_retarded_clap(self, ctx):
-        """ Want to talk like a retarded sjw? Well now you can with !clap """
+        """ Usage: !clap <message> """
 
         message = ctx.message.content
         author_ = ctx.message.author
@@ -30,7 +30,7 @@ class Interact():
     @commands.command(name="toilet", pass_context=True)
     #@checks.is_owner() #do stuff with this later
     async def toilet(self, ctx):
-        """ The magical toilet """
+        """ Usage: !toilet <message> """
 
         message = ctx.message.content
         author_ = ctx.message.author
@@ -40,7 +40,7 @@ class Interact():
 
     @commands.command(name="timclap", pass_context=True)
     async def timclap(self, ctx):
-        """ Want to be a retard like Ryan, Gary, and Kevin? Well now you can with !timclap """
+        """ Usage: !timclap """
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
@@ -49,7 +49,7 @@ class Interact():
 
     @commands.command(name="steebclap", pass_context=True)
     async def steebclap(self, ctx):
-        """ Want to be a retard like kevin? Well now you can with !steebclap """
+        """ Usage: !steebclap """
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
@@ -58,7 +58,7 @@ class Interact():
 
     @commands.command(name="steebclap2", pass_context=True)
     async def steebclap2(self, ctx):
-        """ Want to be a retard like Ryan? Well now you can with !steebclap2 """
+        """ Usage: !steebclap2 """
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
@@ -67,7 +67,7 @@ class Interact():
 
     @commands.command(name="steebclap3", pass_context=True)
     async def steebclap2(self, ctx):
-        """ Want to be a retard like Steebert? Well now you can with !steebclap3 """
+        """ Usage: !steebclap3 """
 
         message = ctx.message.content
         author_ = ctx.message.author
@@ -78,7 +78,7 @@ class Interact():
 
     @commands.command(name="cowsay", pass_context=True)
     async def cowsay(self, ctx):
-        """ Cowsay functionality """
+        """ Usage: !cowsay -h for detailed help """
 
         message = ctx.message.content
         message = message.replace('\n', ' ')

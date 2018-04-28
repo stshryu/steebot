@@ -10,6 +10,32 @@ FLAG_p = 32
 FLAG_t = 64
 FLAG_w = 128
 
+# Help String
+HELP = "```\n Cowsay Help: \n\n \
+You can use any combination of conditional flags.\n \
+You can use only one Cow flag at a time.\n \
+More options for different ascii art and a random quote generator coming soon? \n \
+\n \
+Conditional Flags:\n \
+-n                    Disables word wrap (default length is 40 characters)\n \
+-e <char>             Uses a custom character for the tongue\n \
+-i <char>             Uses a custom character for the eyes\n \
+\n \
+Cow Flags: \n \
+-g                    Greedy($)\n \
+-b                    Borg(=)\n \
+-d                    Dead(X)\n \
+-p                    Paranoid(@)\n \
+-t                    Tired(-)\n \
+-w                    Wired(O)\n \
+```"
+
+def doesContainHelp(message):
+    if '-h' in message or '-H' in message:
+        return True
+    else:
+        return False
+
 # Parse msg for flags
 def msgParser(message):
     conv_table = {
@@ -22,6 +48,10 @@ def msgParser(message):
         '-t':64,
         '-w':128,
     }
+    # First check for help flag, if active ignore the message and return help.
+    if doesContainHelp(message):
+        return HELP
+
     # Remove the command from message
     no_cmd = message.split(' ')[1:]
     user_id = r"(<@)\d+(>)"

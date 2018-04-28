@@ -1,12 +1,14 @@
-import MySQLdb as mysql
-from datetime import date, datetime
-import time
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir)
-import config
-import pprint
+#import MySQLdb as mysql
+#from datetime import date, datetime
+#import time
+#import os,sys,inspect
+#currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+#parentdir = os.path.dirname(currentdir)
+#sys.path.insert(0,parentdir)
+#import config
+#import pprint
+
+################## REMOVED MIGRATING TO CASSANDRA
 
 #<editor-fold> DATABASE HELPER FUNCITONS
 def connect_mysql():
