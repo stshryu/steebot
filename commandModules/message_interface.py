@@ -85,7 +85,7 @@ class message_handler:
         # with a globally asigned image
         image = [[' ', '\\', ' ', ' ', ' ', '^', '_', '_', '^'], [' ', ' ', '\\', ' ', ' ', '(', 'o', 'o', ')', '\\', '_', '_', '_', '_', '_', '_', '_'], [' ', ' ', ' ', ' ', ' ', '(', '_', '_', ')', '\\', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ')', '\\', '/', '\\'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', '-', '-', '-', '-', 'w', ' ', '|'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', ' ', ' ', ' ', ' ', ' ', '|', '|'],[1,6],[1,7],[3,7]]
         flags = cowsay.msgParser(message)
-        if('Error:' in flags):
+        if('Error:' in flags or 'Cowsay Help:' in flags):
             return flags
         message_ = cowsay.messageEngine(flags)
         response = cowsay.imageEngine(message_, image, flags)
