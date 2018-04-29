@@ -15,7 +15,7 @@ class Interact():
 
     def __init__(self, bot):
         self.bot = bot
-        self.message = message_interface.message_handler()
+        self.message_interface = message_interface.message_handler()
 
     @commands.command(name="clap", pass_context=True)
     async def sjw_retarded_clap(self, ctx):
@@ -24,7 +24,7 @@ class Interact():
         message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.createEmojiMessage(author, message, Interact.CONSTANT_CLAP)
+        response = self.message_interface.createEmojiMessage(author, message, Interact.CONSTANT_CLAP)
         await self.bot.say(response)
 
     @commands.command(name="toilet", pass_context=True)
@@ -35,7 +35,7 @@ class Interact():
         message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.createEmojiMessage(author, message, Interact.CONSTANT_TOILET)
+        response = self.message_interface.createEmojiMessage(author, message, Interact.CONSTANT_TOILET)
         await self.bot.say(response)
 
     @commands.command(name="timclap", pass_context=True)
@@ -44,7 +44,7 @@ class Interact():
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.returnTimClap(author)
+        response = self.message_interface.returnTimClap(author)
         await self.bot.say(response)
 
     @commands.command(name="steebclap", pass_context=True)
@@ -53,7 +53,7 @@ class Interact():
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.returnSteebClap(author)
+        response = self.message_interface.returnSteebClap(author)
         await self.bot.say(response)
 
     @commands.command(name="steebclap2", pass_context=True)
@@ -62,7 +62,7 @@ class Interact():
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.returnSteebClap(author, 1)
+        response = self.message_interface.returnSteebClap(author, 1)
         await self.bot.say(response)
 
     @commands.command(name="steebclap3", pass_context=True)
@@ -72,7 +72,7 @@ class Interact():
         message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.returnSteebClap(message, author, 2)
+        response = self.message_interface.returnSteebClap(message, author, 2)
         await self.bot.say(response)
 
 
@@ -84,7 +84,17 @@ class Interact():
         message = message.replace('\n', ' ')
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message.returnCowsay(message, author)
+        response = self.message_interface.returnCowsay(message, author)
+        await self.bot.say(response)
+
+    @commands.command(name="roll", pass_context=True)
+    async def roll(self, ctx):
+        """ Usage: !roll <x-y> """
+
+        message = ctx.message.content
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message_interface.returnRoll(message, author)
         await self.bot.say(response)
 
 def setup(bot):

@@ -2,6 +2,7 @@ import discord
 import botMain
 import config
 import commandModules.cowsay_driver as cowsay
+import commandModules.roll_driver as roll
 
 # TODO: Add a DB event for messages like clap so users can make their own emoji messages
 
@@ -18,8 +19,8 @@ class message_handler:
         # Twitch Templates
         self.twitch_notification_template = ""
         self.twitch_success_template = "Successfully {} **{}**"
-        # Cowsay Templates
-        self.default_image = [[' ', '\\', ' ', ' ', ' ', '^', '_', '_', '^'], [' ', ' ', '\\', ' ', ' ', '(', 'o', 'o', ')', '\\', '_', '_', '_', '_', '_', '_', '_'], [' ', ' ', ' ', ' ', ' ', '(', '_', '_', ')', '\\', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ')', '\\', '/', '\\'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', '-', '-', '-', '-', 'w', ' ', '|'], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', '|', ' ', ' ', ' ', ' ', ' ', '|', '|'],[1,6],[1,7],[3,7]]
+        # Roll Template
+        self.roll_template = "**{}** has rolled: **{}** *({}-{})*"
 
     #<editor-fold> Emoji Messages
     def createEmojiMessage(self, author, message, _type):
@@ -90,5 +91,11 @@ class message_handler:
         message_ = cowsay.messageEngine(flags)
         response = cowsay.imageEngine(message_, image, flags)
         return response
+
+    def returnRoll(self, message, author):
+        response = roll.roll_engine(message)
+        if 'Error:' in response or 'Roll Help:' in response:
+            return response
+        return self.roll_template.format(author, response[2], response[0], response[1])
 
     #</editor-fold>
