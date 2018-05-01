@@ -66,13 +66,13 @@ class Interact():
         await self.bot.say(response)
 
     @commands.command(name="steebclap3", pass_context=True)
-    async def steebclap2(self, ctx):
+    async def steebclap3(self, ctx):
         """ Usage: !steebclap3 """
 
         message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        response = self.message_interface.returnSteebClap(message, author, 2)
+        response = self.message_interface.returnSteebClap(author, 2)
         await self.bot.say(response)
 
 
