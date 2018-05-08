@@ -60,7 +60,7 @@ def removeCommand(message):
 
     no_cmd = message.split(' ')[1:]
 
-def findFlags(message):
+def findFlags(messageArr):
     """ Takes a message (that has no command) and finds flags """
 
     # Bitwise table for flags
@@ -75,18 +75,20 @@ def findFlags(message):
         '-w':128,
     }
 
-    no_flags = []
-
     # Find special flags that require additional options first
-
+    
 
 
 
 
 #</editor-fold>
 
-# Parse msg for flags
 def msgParser(message):
+    """
+    Designed to parse the message for flags and other options. Will catch un-parseable
+    messages that contain illegal strings or @mentions and :emotes:
+    """
+
     # First check for help flag, if active ignore the message and return help.
     if doesContainHelp(message):
         return HELP
