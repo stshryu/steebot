@@ -1,5 +1,11 @@
 import re
 
+# TODO: (60) Check the nocmd output generator and put that into it's own function
+# TODO: (68) Put the message parser (that splits by flags) into it's own function
+# TODO: (128) Put message wrapper into it's own function that can better handle formatted messages
+# TODO: (128-130~) Redo the entire message engine and try to make it output cleaner texts
+# NOTE: Image engine is fine, and should be kept as is.
+
 # Internal Cowsay Constants
 FLAG_N = 1
 FLAG_W = 2
