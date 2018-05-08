@@ -36,14 +36,34 @@ Cow Flags: \n \
 -w                    Wired(O)\
 ```"
 
+#<editor-fold> Message Parser Functions
+
 def doesContainHelp(message):
+    """ Returns True if the help flag is active """
+
     if '-h' in message or '-H' in message:
         return True
     else:
         return False
 
-# Parse msg for flags
-def msgParser(message):
+def doesContainEmotes(message):
+    """ Returns True if the message contains emotes or mentions """
+
+    user_id = r"(<@)\d+(>)"
+    emote = r"[:].+[:]"
+    if re.search(user_id, ''.join(message)) or re.search(emote, ''.join(message)):
+        return True
+    return False
+
+def removeCommand(message):
+    """ Removes the first item in the message and returns the result """
+
+    no_cmd = message.split(' ')[1:]
+
+def findFlags(message):
+    """ Takes a message (that has no command) and finds flags """
+
+    # Bitwise table for flags
     conv_table = {
         '-n':1,
         '-W':2,
@@ -54,16 +74,30 @@ def msgParser(message):
         '-t':64,
         '-w':128,
     }
+
+    no_flags = []
+
+    # Find special flags that require additional options first
+
+
+
+
+
+#</editor-fold>
+
+# Parse msg for flags
+def msgParser(message):
     # First check for help flag, if active ignore the message and return help.
     if doesContainHelp(message):
         return HELP
 
-    # Remove the command from message
-    no_cmd = message.split(' ')[1:]
-    user_id = r"(<@)\d+(>)"
-    emote = r"[:].+[:]"
-    if re.search(user_id, ''.join(no_cmd)) or re.search(emote, ''.join(no_cmd)):
+    # Check if message contains emotes and mentions
+    if doesContainEmotes(message):
         return "Error: @mentions and :emotes: are not allowed"
+
+    # Remove !cowsay from the message
+    no_cmd = removeCommand(message)
+
     # Loop through parsed message for flags
     no_msg = []
     indexes_to_remove = []
