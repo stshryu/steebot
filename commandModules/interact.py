@@ -16,6 +16,8 @@ class Interact():
     def __init__(self, bot):
         self.bot = bot
         self.message_interface = message_interface.message_handler()
+        self.steeb_the_bear_img = "resources/images/steeb_the_sad_bear.png"
+        self.steeb_the_bear_caption = "resources/images/steeb_the_sad_bear_caption.png"
 
     @commands.command(name="clap", pass_context=True)
     async def sjw_retarded_clap(self, ctx):
@@ -92,10 +94,16 @@ class Interact():
         """ Usage: !roll <x-y> """
 
         message = ctx.message.content
-        author_ = ctx.message.author
-        author = str(author_).split('#')[0]
+        _author = ctx.message.author
+        author = str(_author).split('#')[0]
         response = self.message_interface.returnRoll(message, author)
         await self.bot.say(response)
+
+    @commands.command(name="steebbear", pass_context=True)
+    async def steebear(self, ctx):
+        """ Usage: !steebbear """
+
+        await self.bot.upload(self.steeb_the_bear_caption)
 
 def setup(bot):
     bot.add_cog(Interact(bot))
