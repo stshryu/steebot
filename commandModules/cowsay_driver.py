@@ -59,6 +59,7 @@ def removeCommand(message):
     """ Removes the first item in the message and returns the result """
 
     no_cmd = message.split(' ')[1:]
+    return no_cmd
 
 def findFlags(messageArr):
     """ Takes a message (that has no command) and finds flags """
@@ -74,10 +75,18 @@ def findFlags(messageArr):
         '-t':64,
         '-w':128,
     }
-
     # Find special flags that require additional options first
-    
 
+conv_table = {
+    '-n':1,
+    '-W':2,
+    '-b':4,
+    '-d':8,
+    '-g':16,
+    '-p':32,
+    '-t':64,
+    '-w':128,
+}
 
 
 
