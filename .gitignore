@@ -2,3 +2,5 @@ steebot_env/
 config/
 __*/
 database/
+Vagrantfile
+.vagrant/

@@ -4,46 +4,106 @@ import config
 from discord.ext import commands
 import time
 import requests
-
-### Testing admin privileges
-def is_admin():
-    def predicate(ctx):
-        if ctx.message.author.id == config.Admin:
-            return True
-        else:
-            return False
-    return commands.check(predicate)
+import commandModules.message_interface as message_interface
+import checks
+import commandModules.db_driver_mysql as mysql
 
 class Interact():
 
+    CONSTANT_CLAP =     'clap'
+    CONSTANT_TOILET =   'toilet'
+
     def __init__(self, bot):
         self.bot = bot
+        self.message_interface = message_interface.message_handler()
+        self.steeb_the_bear_img = "resources/images/steeb_the_sad_bear.png"
+        self.steeb_the_bear_caption = "resources/images/steeb_the_sad_bear_caption.png"
 
     @commands.command(name="clap", pass_context=True)
     async def sjw_retarded_clap(self, ctx):
-        """ Want to talk like a retarded sjw? Well now you can with !clap """
+        """ Usage: !clap <message> """
 
         message = ctx.message.content
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        clap = ':clap:'
-        split = message.split(' ')
-        result_msg = []
-        for item in split[1:]:
-            result_msg.append(clap)
-            result_msg.append(item)
-        result_msg.append(clap)
-        response = ''.join(map(str, result_msg))
-        await self.bot.say('**{}** said: **{}**'.format(author, response))
+        response = self.message_interface.createEmojiMessage(author, message, Interact.CONSTANT_CLAP)
+        await self.bot.say(response)
 
-    @commands.command(name="steebclap", pass_context=True)
-    async def steebclap(self, ctx):
-        """ What to be a retard like kevin? Well now you can with !steebclap """
+    @commands.command(name="toilet", pass_context=True)
+    #@checks.is_owner() #do stuff with this later
+    async def toilet(self, ctx):
+        """ Usage: !toilet <message> """
+
+        message = ctx.message.content
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message_interface.createEmojiMessage(author, message, Interact.CONSTANT_TOILET)
+        await self.bot.say(response)
+
+    @commands.command(name="timclap", pass_context=True)
+    async def timclap(self, ctx):
+        """ Usage: !timclap """
 
         author_ = ctx.message.author
         author = str(author_).split('#')[0]
-        message = ':clap:don\'t:clap:pretend:clap:to:clap:be:clap:an:clap:OkBread:clap:unless:clap:you:clap:poop:clap:uncontrollably:clap:'
-        await self.bot.say('**{}** says: **{}**'.format(author, message))
+        response = self.message_interface.returnTimClap(author)
+        await self.bot.say(response)
+
+    @commands.command(name="steebclap", pass_context=True)
+    async def steebclap(self, ctx):
+        """ Usage: !steebclap """
+
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message_interface.returnSteebClap(author)
+        await self.bot.say(response)
+
+    @commands.command(name="steebclap2", pass_context=True)
+    async def steebclap2(self, ctx):
+        """ Usage: !steebclap2 """
+
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message_interface.returnSteebClap(author, 1)
+        await self.bot.say(response)
+
+    @commands.command(name="steebclap3", pass_context=True)
+    async def steebclap3(self, ctx):
+        """ Usage: !steebclap3 """
+
+        message = ctx.message.content
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message_interface.returnSteebClap(author, 2)
+        await self.bot.say(response)
+
+
+    @commands.command(name="cowsay", pass_context=True)
+    async def cowsay(self, ctx):
+        """ Usage: !cowsay -h for detailed help """
+
+        message = ctx.message.content
+        message = message.replace('\n', ' ')
+        author_ = ctx.message.author
+        author = str(author_).split('#')[0]
+        response = self.message_interface.returnCowsay(message, author)
+        await self.bot.say(response)
+
+    @commands.command(name="roll", pass_context=True)
+    async def roll(self, ctx):
+        """ Usage: !roll <x-y> """
+
+        message = ctx.message.content
+        _author = ctx.message.author
+        author = str(_author).split('#')[0]
+        response = self.message_interface.returnRoll(message, author)
+        await self.bot.say(response)
+
+    @commands.command(name="steebbear", pass_context=True)
+    async def steebear(self, ctx):
+        """ Usage: !steebbear """
+
+        await self.bot.upload(self.steeb_the_bear_caption)
 
 def setup(bot):
     bot.add_cog(Interact(bot))

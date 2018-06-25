@@ -49,7 +49,7 @@ def update_live_streams(streams):
             stream_online.insert(index, value[0])
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     result = {}
     result['results'] = []
     result['errors'] = []
@@ -58,7 +58,8 @@ def update_live_streams(streams):
     # Update streams that went online first
     sql_offline = """
         UPDATE twitch_streams
-            SET is_online = 0
+            SET is_online = 0,
+                ts_modified = ?
         WHERE stream_alias IN ( %s );
         """ % placeholders
     # Update streams that went online
@@ -66,14 +67,19 @@ def update_live_streams(streams):
     placeholders = ', '.join(placeholder for unused in stream_online)
     sql_online = """
         UPDATE twitch_streams
-            SET is_online = 1
+            SET is_online = 1,
+                ts_modified = ?
         WHERE stream_alias IN ( %s );
         """ % placeholders
+    stream_offline.insert(0, today)
+    stream_online.insert(0, today)
+    print('Stream offline: {}'.format(stream_offline)) ## DEBUGGING
+    print('Stream online: {}'.format(stream_online)) ## DEBUGGING
     try:
-        if(len(sql_offline) > 0):
+        if(len(sql_offline) > 1):
             cursor.execute(sql_offline, stream_offline)
             connection.commit()
-        if(len(sql_online) > 0):
+        if(len(sql_online) > 1):
             cursor.execute(sql_online, stream_online)
             connection.commit()
         result['results'].append(True)
@@ -122,7 +128,7 @@ def get_all_active_twitch_subs():
 def add_twitch_stream(stream_id, stream_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     result = {}
     result['results'] = []
     result['errors'] = []
@@ -142,7 +148,7 @@ def add_twitch_stream(stream_id, stream_alias):
 def remove_twitch_stream(stream_id):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     sql = """
         UPDATE twitch_streams
             SET is_active = 0 ,
@@ -174,7 +180,7 @@ def does_twitch_stream_exist(stream_id):
 def follow_twitch_stream(server_id, stream_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     result = {}
     result['results'] = []
     result['errors'] = []
@@ -202,7 +208,7 @@ def follow_twitch_stream(server_id, stream_alias):
 def unfollow_stream(server_id, stream_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     result = {}
     result['results'] = []
     result['errors'] = []
@@ -270,9 +276,9 @@ def get_followed_streams_aliases(server_id):
     #     WHERE twitch_subs.server_id = ?;
     #     """
     sql = """
-        SELECT twitch_subs.server_id, twitch_streams.is_online, twitch_subs.stream_alias FROM twitch_subs
+        SELECT twitch_subs.server_id, twitch_streams.is_online, twitch_subs.stream_alias, twitch_streams.ts_modified FROM twitch_subs
         INNER JOIN twitch_streams on twitch_streams.stream_alias = twitch_subs.stream_alias
-        WHERE server_id = ?;
+        WHERE server_id = ? AND twitch_subs.is_active = 1;
         """
     try:
         cursor.execute(sql, (server_id,))
@@ -297,7 +303,7 @@ def get_active_streams():
 def add_server(server_id, server_alias):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     sql = """
         INSERT INTO discord_servers (id, server_alias, is_active, ts_created, ts_modified)
         VALUES (?, ?, 1, ?, ?);
@@ -309,7 +315,7 @@ def add_server(server_id, server_alias):
 def remove_server(server_id):
     connection = sqlite3_connect(db_path)
     cursor = connection.cursor()
-    today = date.today()
+    today = datetime.utcnow()
     sql = """
         UPDATE discord_servers
             SET is_active = 0 ,
