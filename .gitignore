@@ -1,6 +1,5 @@
 steebot_env/
 __*/
-Vagrantfile
 .vagrant/
 database/
 *.ini
