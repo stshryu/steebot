@@ -17,21 +17,24 @@ from pymongo import MongoClient
 # post_id = posts.insert_one(reminder).inserted_id
 
 
-class db_handler:
+class reminder_handler:
     def __init__(self):
         self.client = MongoClient()
         self.db = self.client.reminder_db
         self.coll = self.db.reminders
 
-    def insert_reminder(self, user, msg):
+    def insert_reminder(self, user, msg, reminder_date):
+        r_date = reminder_date if reminder_date else "empty"
+        print(r_date)
         r = {
             'user': user,
             'message': msg,
-            'date': datetime.datetime.utcnow()
+            'current_date': datetime.datetime.utcnow(),
+            'reminder_date': reminder_date
         }
         print('hit this')
         r_id = self.coll.insert_one(r).inserted_id
-
+        self.coll.find().sort({'reminder_date':1})
         return r_id
-testdb = db_handler()
-testdb.insert_reminder('testuser', 'test message')
+testdb = reminder_handler()
+testdb.insert_reminder('testuser', 'test message', 'aa')
