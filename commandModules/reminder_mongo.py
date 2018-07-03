@@ -24,17 +24,31 @@ class reminder_handler:
         self.coll = self.db.reminders
 
     def insert_reminder(self, user, msg, reminder_date):
-        r_date = reminder_date if reminder_date else "empty"
-        print(r_date)
         r = {
             'user': user,
             'message': msg,
             'current_date': datetime.datetime.utcnow(),
             'reminder_date': reminder_date
         }
-        print('hit this')
+        #TODO: Rate limit insertion operation to n times
         r_id = self.coll.insert_one(r).inserted_id
-        self.coll.find().sort({'reminder_date':1})
+        #after every insert we sort to make getting the db easier
+        self.coll.find().sort([('reminder_date', pymongo.ASCENDING)])
         return r_id
-testdb = reminder_handler()
-testdb.insert_reminder('testuser', 'test message', 'aa')
+
+    def check_reminder(self):
+        #peek the top level element of db and pop it if it's time
+        current_time = datetime.datetime.utcnow().replace(second=0,microsecond=0)
+        #using find_one get the top level element of sorted array
+        next_reminder = self.coll.find_one()
+        next_reminder_date = next_reminder.get('reminder_date')
+
+        pop_reminder = True if current_time == next_reminder_date else False
+        print(next_reminder.get('reminder_date'))
+        return pop_reminder
+
+    def delete_element(self):
+        #delete the first element of db
+        #ONLY CALL THIS METHOD AFTER CHECKING_REMINDER
+k = reminder_handler()
+k.check_reminder()
