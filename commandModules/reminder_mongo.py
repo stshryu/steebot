@@ -36,11 +36,11 @@ class reminder_handler:
         self.coll.find().sort([('reminder_date', pymongo.ASCENDING)])
         return r_id
 
-    def check_reminder(self):
+    def check_reminder(self, reminder):
         #peek the top level element of db and pop it if it's time
         current_time = datetime.datetime.utcnow().replace(second=0,microsecond=0)
         #using find_one get the top level element of sorted array
-        next_reminder = self.coll.find_one()
+        next_reminder = reminder
         next_reminder_date = next_reminder.get('reminder_date')
 
         pop_reminder = True if current_time == next_reminder_date else False
@@ -50,5 +50,10 @@ class reminder_handler:
     def delete_element(self):
         #delete the first element of db
         #ONLY CALL THIS METHOD AFTER CHECKING_REMINDER
+        self.coll.delete();
+
+    def get_first_reminder(self):
+        #more helper methods idk why i do this
+        return self.coll.find_one()
 k = reminder_handler()
-k.check_reminder()
+print(k.check_reminder(k.get_first_reminder()))
