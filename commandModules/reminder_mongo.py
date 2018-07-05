@@ -47,7 +47,7 @@ class reminder_handler:
         print(next_reminder.get('reminder_date'))
         return pop_reminder
 
-    def delete_element(self):
+    def delete_first_element(self):
         #delete the first element of db
         #ONLY CALL THIS METHOD AFTER CHECKING_REMINDER
         self.coll.delete();
