@@ -1,6 +1,7 @@
 #another db interface b/c me n steeb have no fucking clue what we're doing
 import pymongo
 import datetime
+import parsedatetime.parsedatetime as pdt
 from pymongo import MongoClient
 
 # client = MongoClient()
@@ -24,6 +25,8 @@ class reminder_handler:
         self.coll = self.db.reminders
 
     def insert_reminder(self, user, msg, reminder_date):
+        cal = pdt.Calendar()
+        print(cal.parse(reminder_date))
         r = {
             'user': user,
             'message': msg,
@@ -44,7 +47,6 @@ class reminder_handler:
         next_reminder_date = next_reminder.get('reminder_date')
 
         pop_reminder = True if current_time == next_reminder_date else False
-        print(next_reminder.get('reminder_date'))
         return pop_reminder
 
     def delete_first_element(self):
@@ -56,4 +58,3 @@ class reminder_handler:
         #more helper methods idk why i do this
         return self.coll.find_one()
 k = reminder_handler()
-print(k.check_reminder(k.get_first_reminder()))
