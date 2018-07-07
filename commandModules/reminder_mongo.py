@@ -26,12 +26,14 @@ class reminder_handler:
 
     def insert_reminder(self, user, msg, reminder_date):
         cal = pdt.Calendar()
-        print(cal.parse(reminder_date))
+        parsed_reminder_date = cal.parse(reminder_date)[0]
+        r_d = datetime.datetime(*parsed_reminder_date[:6])
+        print(r_d)
         r = {
             'user': user,
             'message': msg,
             'current_date': datetime.datetime.utcnow(),
-            'reminder_date': reminder_date
+            'reminder_date': r_d
         }
         #TODO: Rate limit insertion operation to n times
         r_id = self.coll.insert_one(r).inserted_id
