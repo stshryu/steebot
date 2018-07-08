@@ -13,14 +13,16 @@ class reminder_background_checker():
         while not self.bot.is_closed:
             handler = reminder.reminder_handler()
             r = handler.get_first_reminder()
+            print(r)
             send_msg = handler.check_reminder(r)
             if send_msg:
+                print('inside if')
                 #delete reminder and send the message
-                # await client.send_message(user, reminder)
+                # await client.send_message(r.user, r.message)
                 await self.bot.send_message(r.user, r.message)
                 print(r)
                 handler.delete_first_element()
-            await asyncio.sleep(60)
+            await asyncio.sleep(5)
 
 
 def setup(bot):

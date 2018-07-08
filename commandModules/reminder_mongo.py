@@ -30,7 +30,6 @@ class reminder_handler:
         r_d = datetime.datetime(*parsed_reminder_date[:6])
         if r_d < datetime.datetime.utcnow():
             return False
-        print(r_d)
         r = {
             'user': user,
             'message': msg,
@@ -45,11 +44,16 @@ class reminder_handler:
 
     def check_reminder(self, reminder):
         #peek the top level element of db and pop it if it's time
+        print('enter check_reminder')
+        if not reminder:
+            return False
         current_time = datetime.datetime.utcnow().replace(second=0,microsecond=0)
         #using find_one get the top level element of sorted array
         next_reminder = reminder
-        next_reminder_date = next_reminder.get('reminder_date')
+        next_reminder_date = next_reminder.get('reminder_date').replace(second=0, microsecond=0)
 
+        print(current_time)
+        print(next_reminder_date)
         pop_reminder = True if current_time == next_reminder_date else False
         return pop_reminder
 
