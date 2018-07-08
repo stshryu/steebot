@@ -3,6 +3,7 @@ import config
 from discord.ext import commands
 import time
 import sched
+import asyncio
 
 class Bot(commands.Bot):
 
@@ -25,6 +26,7 @@ class Bot(commands.Bot):
             self.load_extension('commandModules.{0}'.format(name))
         load_extension('web_requests')
         load_extension('util')
+        load_extension('reminder_background_checker')
         #load_extension('twitch')
         load_extension('interact')
 

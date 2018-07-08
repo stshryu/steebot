@@ -28,6 +28,8 @@ class reminder_handler:
         cal = pdt.Calendar()
         parsed_reminder_date = cal.parse(reminder_date)[0]
         r_d = datetime.datetime(*parsed_reminder_date[:6])
+        if r_d < datetime.datetime.utcnow():
+            return False
         print(r_d)
         r = {
             'user': user,

@@ -1,21 +1,27 @@
 import discord
 import asyncio
-import reminder_mongo as reminder
+import commandModules.reminder_mongo as reminder
+import botMain
+import config
 
-client = discord.Client()
+class reminder_background_checker():
+    def __init__(self, bot):
+        self.bot = bot
+        self.notifier_bg_task = bot.loop.create_task(self.checker())
+    async def checker(self):
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed:
+            handler = reminder.reminder_handler()
+            r = handler.get_first_reminder()
+            send_msg = handler.check_reminder(r)
+            if send_msg:
+                #delete reminder and send the message
+                # await client.send_message(user, reminder)
+                await self.bot.send_message(r.user, r.message)
+                print(r)
+                handler.delete_first_element()
+            await asyncio.sleep(60)
 
-print('hello')
-async def background_check_dateTime():
-    print('fff')
-    while not client.is_closed:
-        #get top reminder, check top reminder
-        handler = reminder_handler()
-        r = handler.get_first_reminder()
-        print(r)
-        send_msg = handler.check_reminder(r)
-        if send_msg:
-            #delete reminder and send the message
-            # await client.send_message(user, reminder)
-            handler.delete_first_element()
 
-        await asyncio.sleep(60)
+def setup(bot):
+    bot.add_cog(reminder_background_checker(bot))

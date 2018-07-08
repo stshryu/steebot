@@ -117,8 +117,12 @@ class Interact():
         date = payload[2]
         _author = ctx.message.author
         author = str(_author)
-        self.remind.insert_reminder(author,message,date)
-        await self.bot.say('Reminder Saved')
+        res = self.remind.insert_reminder(author,message,date)
+        if res:
+            bot_response = 'Reminder Saved'
+        else:
+            bot_response = 'Failed to Save'
+        await self.bot.say(bot_response)
 
 def setup(bot):
     bot.add_cog(Interact(bot))
