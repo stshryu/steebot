@@ -24,7 +24,7 @@ class reminder_handler:
         self.db = self.client.reminder_db
         self.coll = self.db.reminders
 
-    def insert_reminder(self, user, msg, reminder_date):
+    def insert_reminder(self, user, msg, reminder_date, id):
         cal = pdt.Calendar()
         parsed_reminder_date = cal.parse(reminder_date)[0]
         r_d = datetime.datetime(*parsed_reminder_date[:6])
@@ -32,6 +32,7 @@ class reminder_handler:
             return False
         r = {
             'user': user,
+            'id': id,
             'message': msg,
             'current_date': datetime.datetime.utcnow(),
             'reminder_date': r_d
