@@ -4,6 +4,7 @@ from discord.ext import commands
 import time
 import sched
 import asyncio
+import itertools
 
 class Bot(commands.Bot):
 
@@ -14,6 +15,7 @@ class Bot(commands.Bot):
         self.initial_config()
         self.initial_extensions()
         self.initial_listener()
+        self.create_user_list()
 
     def initial_config(self):
         self.token = config.Bot_Token
@@ -33,6 +35,16 @@ class Bot(commands.Bot):
     def initial_listener(self):
         self.add_listener(self.startup_message, 'on_ready')
 
+    def create_user_list(self):
+        self.user_list = []
+        gen = self.get_all_members()
+
+    def has_next(iterable):
+        try:
+            first = next(iterable)
+        except StopIteration
+            return None
+        return first, itertools.chain([first],iterable)
     async def startup_message(self):
         print("Logged in as {}".format(self.username))
         print("Bot ID: {}".format(self.app_id))
