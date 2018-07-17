@@ -111,14 +111,18 @@ class Interact():
     @commands.command(name ="reminder", pass_context=True)
     async def reminder(self, ctx):
         """ Usage: !reminder <"message"> <duration>"""
-
+        bot_response = ''
         payload = self.toolkit.commandStripper(ctx.message.content).split('"')
-        message = payload[1]
-        date = payload[2]
-        _author = ctx.message.author
-        id = _author.id
-        author = str(_author)
-        res = self.remind.insert_reminder(author,message,date,id)
+        res = None
+        #really basic validation of input
+        if payload[0] == '!reminder ':
+            if len(payload) >= 3:
+                message = payload[1]
+                date = payload[2]
+                _author = ctx.message.author
+                id = _author.id
+                author = str(_author)
+                res = self.remind.insert_reminder(author,message,date,id)
         if res:
             bot_response = 'Reminder Saved'
         else:
