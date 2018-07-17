@@ -29,7 +29,7 @@ class reminder_background_checker():
                         print(r)
                         handler.delete_first_element()
                         print('successful delete')
-            await asyncio.sleep(60)
+            await asyncio.sleep(30)
 #the below method is a test method
     async def botTask(self):
         await self.bot.wait_until_ready()
