@@ -26,7 +26,12 @@ class reminder_handler:
 
     def insert_reminder(self, user, msg, reminder_date, id):
         cal = pdt.Calendar()
-        parsed_reminder_date = cal.parse(reminder_date)[0]
+        res = cal.parse(reminder_date)
+        print(res)
+        parsed_reminder_date = res[0]
+        is_valid = res[1]
+        if is_valid == 0:
+            return None
         r_d = datetime.datetime(*parsed_reminder_date[:6])
         if r_d < datetime.datetime.utcnow():
             return False
