@@ -118,7 +118,6 @@ class Interact():
         _author = ctx.message.author
         id = _author.id
         author = str(_author)
-        await self.bot.send_message(_author, 'fuck a duck')
         res = self.remind.insert_reminder(author,message,date,id)
         if res:
             bot_response = 'Reminder Saved'

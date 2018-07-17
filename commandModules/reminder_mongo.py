@@ -45,7 +45,6 @@ class reminder_handler:
 
     def check_reminder(self, reminder):
         #peek the top level element of db and pop it if it's time
-        print('enter check_reminder')
         if not reminder:
             return False
         current_time = datetime.datetime.utcnow().replace(second=0,microsecond=0)
@@ -53,15 +52,14 @@ class reminder_handler:
         next_reminder = reminder
         next_reminder_date = next_reminder.get('reminder_date').replace(second=0, microsecond=0)
 
-        print(current_time)
-        print(next_reminder_date)
         pop_reminder = True if current_time == next_reminder_date else False
+        print(pop_reminder)
         return pop_reminder
 
     def delete_first_element(self):
         #delete the first element of db
         #ONLY CALL THIS METHOD AFTER CHECKING_REMINDER
-        self.coll.delete();
+        self.coll.delete_one({});
 
     def get_first_reminder(self):
         #more helper methods idk why i do this

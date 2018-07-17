@@ -7,27 +7,29 @@ import config
 class reminder_background_checker():
     def __init__(self, bot):
         self.bot = bot
-        # self.notifier_bg_task = self.bot.loop.create_task(self.checker())
-        self.bg_task = self.bot.loop.create_task(self.botTask())
+        self.notifier_bg_task = self.bot.loop.create_task(self.checker())
+
+        #testing method: deprecate later
+        # self.bg_task = self.bot.loop.create_task(self.botTask())
     async def checker(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed:
             handler = reminder.reminder_handler()
             r = handler.get_first_reminder()
             print(r)
-            send_msg = handler.check_reminder(r)
-            user = bot.users.get(r.id)
-            print(user)
-            if user:
-                await self.bot.send_message(user, 'askdljfsldjkf');
-            if send_msg:
-                print('inside if')
-                #delete reminder and send the message
-                # await client.send_message(r.user, r.message)
-                # await self.bot.send_message(r.user_key, r.message)
-                print(r)
-                handler.delete_first_element()
-            await asyncio.sleep(5)
+            if r:
+                if r.get('id'):
+                    #only delete message if send_msg true
+                    send_msg = handler.check_reminder(r)
+                    user = await self.bot.get_user_info(r.get('id'))
+                    if send_msg:
+                        print('inside if')
+                        await self.bot.send_message(user, r.get('message'));
+                        print('send this')
+                        print(r)
+                        handler.delete_first_element()
+                        print('successful delete')
+            await asyncio.sleep(60)
 #the below method is a test method
     async def botTask(self):
         await self.bot.wait_until_ready()
@@ -38,13 +40,9 @@ class reminder_background_checker():
             print('------------')
             print(r)
             print('============')
-            users = [];
-            while True:
-                try:
-                    item = next(self.bot.user_list)
-                except StopIteration:
-                    print('aasaas')
-                    return
+            print(r.get('id'))
+            user = await self.bot.get_user_info(r.get('id'))
+            await self.bot.send_message(user, 'FUCK')
                 # if item:
                 #     print('ff')
                 #     users.append(item)
