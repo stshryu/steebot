@@ -1,0 +1,13 @@
+# Rename to config.ini before use
+[Bot Info]
+    username = steebot#7762
+    token = <token>
+    ownerID = <ownerID>
+
+[App Info]
+    ID = <appID>
+    secret = <secret>
+
+[Twitch Info]
+    ID = <twitchID>
+    secret = <secret>

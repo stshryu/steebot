@@ -7,6 +7,8 @@ import requests
 import commandModules.message_interface as message_interface
 import checks
 import commandModules.db_driver_mysql as mysql
+import commandModules.reminder_mongo as reminder
+import toolkit.toolkit as toolkit
 
 class Interact():
 
@@ -15,6 +17,8 @@ class Interact():
 
     def __init__(self, bot):
         self.bot = bot
+        self.toolkit = toolkit.toolkit()
+        self.remind = reminder.reminder_handler()
         self.message_interface = message_interface.message_handler()
         self.steeb_the_bear_img = "resources/images/steeb_the_sad_bear.png"
         self.steeb_the_bear_caption = "resources/images/steeb_the_sad_bear_caption.png"
@@ -104,6 +108,26 @@ class Interact():
         """ Usage: !steebbear """
 
         await self.bot.upload(self.steeb_the_bear_caption)
+    @commands.command(name ="reminder", pass_context=True)
+    async def reminder(self, ctx):
+        """ Usage: !reminder <"message"> <duration>"""
+        bot_response = ''
+        payload = self.toolkit.commandStripper(ctx.message.content).split('"')
+        res = None
+        #really basic validation of input
+        if payload[0] == '!reminder ':
+            if len(payload) >= 3:
+                message = payload[1]
+                date = payload[2]
+                _author = ctx.message.author
+                id = _author.id
+                author = str(_author)
+                res = self.remind.insert_reminder(author,message,date,id)
+        if res:
+            bot_response = 'Reminder Saved'
+        else:
+            bot_response = 'Failed to Save'
+        await self.bot.say(bot_response)
 
 def setup(bot):
     bot.add_cog(Interact(bot))
